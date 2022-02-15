@@ -7,7 +7,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 // Defines the import path that should be used to import the generated package,
 // and the package name.
-option go_package = "github.com/johanbrandhorst/grpc-gateway-boilerplate/proto;example";
+option go_package = "github.com/timsolov/ms-users/proto;example";
 
 // These annotations are used when generating the OpenAPI file.
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
@@ -15,7 +15,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     version: "1.0";
   };
   external_docs: {
-    url: "https://github.com/johanbrandhorst/grpc-gateway-boilerplate";
+    url: "https://github.com/timsolov/ms-users";
     description: "gRPC-gateway boilerplate repository";
   }
   schemes: HTTPS;
