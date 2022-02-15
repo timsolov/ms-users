@@ -1,0 +1,6 @@
+.vscode
+.idea
+*.pb.go
+*.pb.gw.go
+*.gen.go
+service
