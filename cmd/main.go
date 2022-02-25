@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 	"net"
-	"os"
 	"time"
 
 	"github.com/timsolov/ms-users/internal/client/db/postgres"
@@ -21,38 +19,34 @@ import (
 func main() {
 	flag.Parse()
 
-	// TODO: add methods for LoggerV2 to LogrusLogger
+	cfg := conf.New()
+	log := logger.NewLogrusLogger(cfg.LOG().LogLevel, cfg.LOG().LogJson, "", false)
 	// Adds gRPC internal logs. This is quite verbose, so adjust as desired!
-	log := grpclog.NewLoggerV2(os.Stdout, ioutil.Discard, ioutil.Discard)
-	grpclog.SetLoggerV2(log)
+	grpclog.SetLoggerV2(log.(grpclog.LoggerV2))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	cfg := conf.New()
-
-	log2 := logger.NewLogrusLogger(cfg.LOG().LogLevel, cfg.LOG().LogJson, "", false)
-
 	d, err := postgres.New(cfg.DB().DSN(), 5, 5, 5*time.Minute)
 	if err != nil {
-		log2.Fatalf("connect to db: %v", err)
+		log.Fatalf("connect to db: %v", err)
 	}
 
 	addr := "0.0.0.0:10000"
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatalln("Failed to listen:", err)
+		log.Fatalf("Bind port for gRPC server on http://%s", addr)
 	}
 
 	s := grpc.NewServer()
 	server.RegisterUserServiceServer(s, server.New(usecase.New(d)))
 
 	// Serve gRPC Server
-	log.Info("Serving gRPC on http://", addr)
+	log.Infof("Serving gRPC on http://%s", addr)
 	go func() {
-		log.Fatal(s.Serve(lis))
+		log.Fatalf("%s", s.Serve(lis))
 	}()
 
 	err = gateway.Run(ctx, "0.0.0.0:11000", addr, []gateway.RegisterServiceHandlerFunc{server.RegisterUserServiceHandler})
-	log.Fatalln(err)
+	log.Fatalf("Run gateway: %s", err)
 }
