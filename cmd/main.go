@@ -3,15 +3,20 @@ package main
 import (
 	"context"
 	"flag"
-	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/timsolov/ms-users/internal/client/db/postgres"
-	"github.com/timsolov/ms-users/internal/common/gateway"
-	"github.com/timsolov/ms-users/internal/common/logger"
-	"github.com/timsolov/ms-users/internal/conf"
-	"github.com/timsolov/ms-users/internal/server"
-	"github.com/timsolov/ms-users/internal/usecase"
+	"github.com/timsolov/ms-users/app/conf"
+	"github.com/timsolov/ms-users/app/infrastructure/adapter/controller/grpc_gateway"
+	"github.com/timsolov/ms-users/app/infrastructure/adapter/controller/grpc_server"
+	"github.com/timsolov/ms-users/app/infrastructure/adapter/controller/web"
+	"github.com/timsolov/ms-users/app/infrastructure/adapter/gateway/grpc_client"
+	"github.com/timsolov/ms-users/app/infrastructure/logger"
+	"github.com/timsolov/ms-users/app/infrastructure/repository/postgres"
+	"github.com/timsolov/ms-users/app/pb"
+	"github.com/timsolov/ms-users/app/usecase"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 )
@@ -20,33 +25,63 @@ func main() {
 	flag.Parse()
 
 	cfg := conf.New()
+
 	log := logger.NewLogrusLogger(cfg.LOG().LogLevel, cfg.LOG().LogJson, "", false)
-	// Adds gRPC internal logs. This is quite verbose, so adjust as desired!
 	grpclog.SetLoggerV2(log.(grpclog.LoggerV2))
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	log.Infof("application started")
+	defer log.Infof("application finished")
 
-	d, err := postgres.New(cfg.DB().DSN(), 5, 5, 5*time.Minute)
+	ctx := context.Background()
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
+	d, err := postgres.New(timeoutCtx, cfg.DB().DSN(), 5, 5, 5*time.Minute)
 	if err != nil {
 		log.Fatalf("connect to db: %v", err)
 	}
+	cancel()
 
-	addr := "0.0.0.0:10000"
-	lis, err := net.Listen("tcp", addr)
+	grpcCtx, grpcCancel := context.WithCancel(ctx)
+	grpcErr := grpc_server.Run(
+		grpcCtx,
+		log,
+		cfg.GRPC().Addr(), // listen incoming port for gRPC
+		func(s grpc.ServiceRegistrar) {
+			pb.RegisterUserServiceServer(s, web.New(usecase.New(d)))
+		},
+		web.New(usecase.New(d)),
+	)
+
+	grpcClient, err := grpc_client.BlockConnect(ctx, cfg.GRPC().Addr())
 	if err != nil {
-		log.Fatalf("Bind port for gRPC server on http://%s", addr)
+		log.Fatalf("connect to gRPC server: %s", cfg.GRPC().Addr())
 	}
 
-	s := grpc.NewServer()
-	server.RegisterUserServiceServer(s, server.New(usecase.New(d)))
+	grpcGwCtx, grpcGwCancel := context.WithCancel(ctx)
+	grpcGwErr := grpc_gateway.Run(
+		grpcGwCtx,
+		log,
+		cfg.HTTP().Addr(), // listen incoming port for rest api
+		grpcClient,        // client connection to gRPC server
+		[]grpc_gateway.RegisterServiceHandlerFunc{
+			pb.RegisterUserServiceHandler,
+		},
+	)
 
-	// Serve gRPC Server
-	log.Infof("Serving gRPC on http://%s", addr)
-	go func() {
-		log.Fatalf("%s", s.Serve(lis))
-	}()
+	select {
+	case <-done:
+		log.Infof("SIGTERM detected")
+	case err := <-grpcErr:
+		log.Errorf("gRPC server error: %s", err)
+	case err := <-grpcGwErr:
+		log.Errorf("gRPC gateway error: %s", err)
+	}
 
-	err = gateway.Run(ctx, "0.0.0.0:11000", addr, []gateway.RegisterServiceHandlerFunc{server.RegisterUserServiceHandler})
-	log.Fatalf("Run gateway: %s", err)
+	grpcCancel()
+	grpcGwCancel()
+
+	time.Sleep(1 * time.Second)
 }

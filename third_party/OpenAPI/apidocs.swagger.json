@@ -88,11 +88,6 @@
         ],
         "tags": [
           "UserService"
-        ],
-        "security": [
-          {
-            "X-User-Id": []
-          }
         ]
       },
       "put": {

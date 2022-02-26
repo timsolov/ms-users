@@ -9,7 +9,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 // Defines the import path that should be used to import the generated package,
 // and the package name.
-option go_package = ".;server";
+option go_package = ".;pb";
 
 // These annotations are used when generating the OpenAPI file.
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
@@ -53,13 +53,13 @@ service UserService {
       post: "/api/v1/users"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: {
-          security_requirement: {
-              key: "X-User-Id";
-          }
-      }
-    };
+    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    //   security: {
+    //       security_requirement: {
+    //           key: "X-User-Id";
+    //       }
+    //   }
+    // };
   }
   
   // List users.

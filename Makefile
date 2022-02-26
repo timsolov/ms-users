@@ -1,5 +1,6 @@
 BUF_VERSION:=1.0.0-rc9
 
+.PHONY: build
 build:
 	buf generate
 	go build -o service ./cmd/
