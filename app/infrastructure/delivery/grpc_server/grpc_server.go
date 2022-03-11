@@ -6,6 +6,7 @@ import (
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/timsolov/ms-users/app/infrastructure/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -31,10 +32,14 @@ func Run(ctx context.Context, log logger.Logger, addr string, cb RegisterService
 	s := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_recovery.UnaryServerInterceptor(opts...),
+			grpc_prometheus.UnaryServerInterceptor,
 		),
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 	)
 
 	cb(s)
+
+	grpc_prometheus.Register(s)
 
 	errCh := make(chan error, 1)
 
