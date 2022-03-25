@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/timsolov/ms-users/app/infrastructure/logger"
 	"github.com/timsolov/ms-users/third_party"
 	"google.golang.org/grpc"
@@ -66,13 +67,20 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 	// prepare OpenAPI handler
 	oa := getOpenAPIHandler()
 
-	const openApiPath = "/api/swagger/"
+	const (
+		openApiPath    = "/api/swagger/"
+		prometheusPath = "/metric"
+	)
 
 	gwServer := &http.Server{
 		Addr: gatewayAddr,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, openApiPath) {
 				http.StripPrefix(openApiPath, oa).ServeHTTP(w, r)
+				return
+			}
+			if strings.HasPrefix(r.URL.Path, prometheusPath) {
+				http.StripPrefix(prometheusPath, promhttp.Handler()).ServeHTTP(w, r)
 				return
 			}
 			// nolint:gocritic

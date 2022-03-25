@@ -10,56 +10,56 @@ import (
 // stub: l *logrusLogger grpclog.LoggerV2
 
 // Info logs to INFO log. Arguments are handled in the manner of fmt.Print.
-func (l *logrusLogger) Info(args ...interface{}) {
+func (l *LogrusLogger) Info(args ...interface{}) {
 	l.log.Info(args...)
 }
 
 // Infoln logs to INFO log. Arguments are handled in the manner of fmt.Println.
-func (l *logrusLogger) Infoln(args ...interface{}) {
+func (l *LogrusLogger) Infoln(args ...interface{}) {
 	l.log.Infoln(args...)
 }
 
 // Warning logs to WARNING log. Arguments are handled in the manner of fmt.Print.
-func (l *logrusLogger) Warning(args ...interface{}) {
+func (l *LogrusLogger) Warning(args ...interface{}) {
 	l.log.Warn(args...)
 }
 
 // Warningln logs to WARNING log. Arguments are handled in the manner of fmt.Println.
-func (l *logrusLogger) Warningln(args ...interface{}) {
+func (l *LogrusLogger) Warningln(args ...interface{}) {
 	l.log.Warnln(args...)
 }
 
 // Warningf logs to WARNING log. Arguments are handled in the manner of fmt.Printf.
-func (l *logrusLogger) Warningf(format string, args ...interface{}) {
+func (l *LogrusLogger) Warningf(format string, args ...interface{}) {
 	l.log.Warnf(format, args...)
 }
 
 // Error logs to ERROR log. Arguments are handled in the manner of fmt.Print.
-func (l *logrusLogger) Error(args ...interface{}) {
+func (l *LogrusLogger) Error(args ...interface{}) {
 	l.log.Error(args...)
 }
 
 // Errorln logs to ERROR log. Arguments are handled in the manner of fmt.Println.
-func (l *logrusLogger) Errorln(args ...interface{}) {
+func (l *LogrusLogger) Errorln(args ...interface{}) {
 	l.log.Errorln(args...)
 }
 
 // Fatal logs to ERROR log. Arguments are handled in the manner of fmt.Print.
 // gRPC ensures that all Fatal logs will exit with os.Exit(1).
 // Implementations may also call os.Exit() with a non-zero exit code.
-func (l *logrusLogger) Fatal(args ...interface{}) {
+func (l *LogrusLogger) Fatal(args ...interface{}) {
 	l.log.Fatal(args...)
 }
 
 // Fatalln logs to ERROR log. Arguments are handled in the manner of fmt.Println.
 // gRPC ensures that all Fatal logs will exit with os.Exit(1).
 // Implementations may also call os.Exit() with a non-zero exit code.
-func (l *logrusLogger) Fatalln(args ...interface{}) {
+func (l *LogrusLogger) Fatalln(args ...interface{}) {
 	l.log.Fatalln(args...)
 }
 
 // V reports whether verbosity level l is at least the requested verbose level.
-func (l *logrusLogger) V(level int) bool {
+func (l *LogrusLogger) V(level int) bool {
 	const (
 		// infoLog indicates Info severity.
 		infoLog int = iota

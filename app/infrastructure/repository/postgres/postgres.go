@@ -16,7 +16,7 @@ type DB struct {
 	db *gorm.DB
 }
 
-func New(ctx context.Context, dsn string, maxConns, maxIdle int, connLifeTime time.Duration) (repository.Repository, error) {
+func New(ctx context.Context, dsn string, maxConns, maxIdle int, connLifeTime time.Duration) (*DB, error) {
 	db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
 		return nil, err
