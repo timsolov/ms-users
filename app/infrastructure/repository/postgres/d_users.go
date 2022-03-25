@@ -18,7 +18,7 @@ func (d *DB) NewUser(ctx context.Context, e *entity.User) error {
 		m.UserID = uuid.New()
 	}
 
-	db := d.db.WithContext(context.TODO())
+	db := d.db.WithContext(ctx)
 
 	if err := db.Create(m).Error; err != nil {
 		return E(err)
@@ -31,7 +31,7 @@ func (d *DB) NewUser(ctx context.Context, e *entity.User) error {
 func (d *DB) User(ctx context.Context, userID uuid.UUID, columns ...string) (entity.User, error) {
 	var m models.User
 
-	db := d.db.WithContext(context.TODO())
+	db := d.db.WithContext(ctx)
 	if len(columns) > 0 {
 		m.UserID = userID
 		db = db.Select(strings.Join(columns, ","))
@@ -49,7 +49,7 @@ func (d *DB) UpdUser(ctx context.Context, e *entity.User, columns ...string) err
 	var m models.User
 	m.FromEntity(e)
 
-	db := d.db.WithContext(context.TODO())
+	db := d.db.WithContext(ctx)
 
 	if len(columns) > 0 {
 		return E(db.Model(m).Where("user_id = ?", m.UserID).Select(columns).Updates(m).Error)
@@ -59,7 +59,7 @@ func (d *DB) UpdUser(ctx context.Context, e *entity.User, columns ...string) err
 
 // DelUser deletes user record record.
 func (d *DB) DelUser(ctx context.Context, userID uuid.UUID) error {
-	db := d.db.WithContext(context.TODO())
+	db := d.db.WithContext(ctx)
 
 	return E(db.Delete(&entity.User{}, "user_id = ?", userID).Error)
 }
