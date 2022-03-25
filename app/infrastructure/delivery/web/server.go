@@ -6,18 +6,16 @@ import (
 	"github.com/timsolov/ms-users/app/usecase/create_user"
 )
 
-type Server interface {
-	pb.UserServiceServer
-}
-
-// server implements the protobuf interface
-type server struct {
+// Server implements the protobuf interface
+type Server struct {
 	createUser create_user.CreateUserCommand
 }
 
-// New initializes a new Backend struct.
-func New(repo repository.Repository) Server {
-	return &server{
+var _ pb.UserServiceServer = (*Server)(nil)
+
+// New initializes a new Server struct.
+func New(repo repository.Repository) *Server {
+	return &Server{
 		createUser: create_user.NewCreateUserCommand(repo),
 	}
 }

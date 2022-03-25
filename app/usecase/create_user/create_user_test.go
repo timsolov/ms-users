@@ -11,7 +11,7 @@ import (
 
 func TestCreateUserCommand_Do(t *testing.T) {
 	type fields struct {
-		repo repository.UserRepository
+		repo repository.Repository
 	}
 	type args struct {
 		ctx context.Context

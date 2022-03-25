@@ -9,19 +9,19 @@ import (
 	"github.com/timsolov/ms-users/app/domain/repository"
 )
 
-// CreateUser describes
+// CreateUser describes parameters
 type CreateUser struct {
 	Email     string
 	FirstName string
 	LastName  string
 }
 
-// CreateUserCommand describes
+// CreateUserCommand describes dependencies
 type CreateUserCommand struct {
-	repo repository.UserRepository
+	repo repository.Repository
 }
 
-func NewCreateUserCommand(repo repository.UserRepository) CreateUserCommand {
+func NewCreateUserCommand(repo repository.Repository) CreateUserCommand {
 	return CreateUserCommand{
 		repo: repo,
 	}

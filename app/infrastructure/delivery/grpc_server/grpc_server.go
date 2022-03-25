@@ -15,7 +15,7 @@ import (
 
 type RegisterServiceCallback func(s grpc.ServiceRegistrar)
 
-func Run(ctx context.Context, log logger.Logger, addr string, callback RegisterServiceCallback, serviceImpl interface{}) chan error {
+func Run(ctx context.Context, log logger.Logger, addr string, callback RegisterServiceCallback) chan error {
 	lc := net.ListenConfig{}
 
 	lis, err := lc.Listen(ctx, "tcp", addr)

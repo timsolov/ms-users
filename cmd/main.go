@@ -14,7 +14,6 @@ import (
 	"github.com/timsolov/ms-users/app/infrastructure/logger"
 	"github.com/timsolov/ms-users/app/infrastructure/repository/postgres"
 	"github.com/timsolov/ms-users/app/pb"
-	"github.com/timsolov/ms-users/app/usecase"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 )
@@ -54,9 +53,8 @@ func main() {
 		log,
 		cfg.GRPC().Addr(), // listen incoming port for gRPC
 		func(s grpc.ServiceRegistrar) {
-			pb.RegisterUserServiceServer(s, web.New(usecase.New(d)))
+			pb.RegisterUserServiceServer(s, web.New(d))
 		},
-		web.New(usecase.New(d)),
 	)
 
 	grpcGwCtx, grpcGwCancel := context.WithCancel(ctx)

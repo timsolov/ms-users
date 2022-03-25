@@ -19,7 +19,7 @@ import (
 //   "name": "value"
 // }
 // ```
-func (s *server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+func (s *Server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	// nolint:gocritic
 	// userID := grpc_gateway.UserID(ctx)
 	// if userID == "" {
@@ -51,20 +51,20 @@ func (s *server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.
 // Returns the list of users records.
 // Maximum records per request is 100.
 // Pagination available by using offset, limit.
-func (s *server) ListUsers(_ context.Context, query *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
+func (s *Server) ListUsers(_ context.Context, query *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
 	panic("not implemented")
 }
 
 // Update user info.
 //
 // Update user info fully or partial.
-func (s *server) UpdateUser(_ context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+func (s *Server) UpdateUser(_ context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 	panic("not implemented")
 }
 
 // UserDetail detail info.
 //
 // UserDetail returns user detail info.
-func (s *server) UserDetail(context.Context, *pb.UserDetailRequest) (*pb.UserDetailResponse, error) {
+func (s *Server) UserDetail(context.Context, *pb.UserDetailRequest) (*pb.UserDetailResponse, error) {
 	panic("not implemented")
 }
