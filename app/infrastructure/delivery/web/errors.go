@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 
 	"google.golang.org/grpc"
@@ -11,7 +12,7 @@ import (
 )
 
 var (
-	ErrAuthRequired = status.Error(codes.Unauthenticated, "authorization required")
+	ErrAuthRequired = status.Error(http.StatusUnauthorized, "authorization required")
 )
 
 func Errorf(code codes.Code, format string, args ...interface{}) error {

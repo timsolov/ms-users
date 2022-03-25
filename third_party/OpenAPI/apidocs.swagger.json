@@ -202,7 +202,12 @@
       }
     },
     "v1CreateUserResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      }
     },
     "v1ListUsersResponse": {
       "type": "object",

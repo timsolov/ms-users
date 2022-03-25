@@ -99,7 +99,9 @@ message CreateUserRequest {
   string last_name  = 4;
 }
 
-message CreateUserResponse {}
+message CreateUserResponse {
+  string user_id    = 1;
+}
 
 message ListUsersRequest {
   int64 offset    = 1;

@@ -2,11 +2,9 @@ package web
 
 import (
 	"context"
-	"time"
 
-	"github.com/google/uuid"
-	"github.com/timsolov/ms-users/app/domain/entity"
 	"github.com/timsolov/ms-users/app/pb"
+	"github.com/timsolov/ms-users/app/usecase/create_user"
 )
 
 // stub: s *server UserServiceServer
@@ -32,21 +30,20 @@ func (s *server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.
 		return &pb.CreateUserResponse{}, stErr
 	}
 
-	user := entity.User{
-		UserID:    uuid.New(),
-		Email:     in.Email,
-		FirstName: in.FirstName,
-		LastName:  in.LastName,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	createUser := create_user.CreateUser{
+		Email:     in.GetEmail(),
+		FirstName: in.GetFirstName(),
+		LastName:  in.GetLastName(),
 	}
 
-	err := s.uc.NewUser(ctx, &user)
+	userID, err := s.createUser.Do(ctx, &createUser)
 	if err != nil {
 		return &pb.CreateUserResponse{}, Internal(ctx, "usecase NewUser: %s", err)
 	}
 
-	return &pb.CreateUserResponse{}, nil
+	return &pb.CreateUserResponse{
+		UserId: userID.String(),
+	}, nil
 }
 
 // List users.
