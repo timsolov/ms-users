@@ -15,7 +15,7 @@ import (
 
 type RegisterServiceCallback func(s grpc.ServiceRegistrar)
 
-func Run(ctx context.Context, log logger.Logger, addr string, cb RegisterServiceCallback, serviceImpl interface{}) chan error {
+func Run(ctx context.Context, log logger.Logger, addr string, callback RegisterServiceCallback, serviceImpl interface{}) chan error {
 	lc := net.ListenConfig{}
 
 	lis, err := lc.Listen(ctx, "tcp", addr)
@@ -37,7 +37,7 @@ func Run(ctx context.Context, log logger.Logger, addr string, cb RegisterService
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 	)
 
-	cb(s)
+	callback(s)
 
 	grpc_prometheus.Register(s)
 

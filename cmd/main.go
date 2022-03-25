@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,12 +20,10 @@ import (
 )
 
 func main() {
-	flag.Parse()
-
 	cfg := conf.New()
 
-	log := logger.NewLogrusLogger(cfg.LOG().Level, cfg.LOG().Json, "", false)
-	grpclog.SetLoggerV2(log.(grpclog.LoggerV2))
+	log := logger.NewLogrusLogger(cfg.LOG().Level, cfg.LOG().Json, cfg.LOG().TimeFormat, false)
+	grpclog.SetLoggerV2(log)
 
 	log.Infof("application started")
 	defer log.Infof("application finished")
@@ -36,6 +33,7 @@ func main() {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
+	// create connetion to PostgreSQL
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	d, err := postgres.New(
 		timeoutCtx,

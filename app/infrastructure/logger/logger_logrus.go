@@ -4,11 +4,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type logrusLogger struct {
+type LogrusLogger struct {
 	log *logrus.Entry
 }
 
-func NewLogrusLogger(logLevel string, logJson bool, timeFormat string, logLines bool) Logger {
+func NewLogrusLogger(logLevel string, logJson bool, timeFormat string, logLines bool) *LogrusLogger {
 	if timeFormat == "" {
 		timeFormat = _defaultTimeFormat
 	}
@@ -30,45 +30,45 @@ func NewLogrusLogger(logLevel string, logJson bool, timeFormat string, logLines 
 	logger.SetLevel(level)
 	logger.SetReportCaller(logLines)
 
-	return &logrusLogger{
+	return &LogrusLogger{
 		log: logrus.NewEntry(logger),
 	}
 }
 
-func (l *logrusLogger) Debugf(format string, args ...interface{}) {
+func (l *LogrusLogger) Debugf(format string, args ...interface{}) {
 	l.log.Debugf(format, args...)
 }
 
-func (l *logrusLogger) Infof(format string, args ...interface{}) {
+func (l *LogrusLogger) Infof(format string, args ...interface{}) {
 	l.log.Infof(format, args...)
 }
 
-func (l *logrusLogger) Warnf(format string, args ...interface{}) {
+func (l *LogrusLogger) Warnf(format string, args ...interface{}) {
 	l.log.Warnf(format, args...)
 }
 
-func (l *logrusLogger) Errorf(format string, args ...interface{}) {
+func (l *LogrusLogger) Errorf(format string, args ...interface{}) {
 	l.log.Errorf(format, args...)
 }
 
-func (l *logrusLogger) Fatalf(format string, args ...interface{}) {
+func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
 	l.log.Fatalf(format, args...)
 }
 
-func (l *logrusLogger) Panicf(format string, args ...interface{}) {
+func (l *LogrusLogger) Panicf(format string, args ...interface{}) {
 	l.log.Fatalf(format, args...)
 }
 
-func (l *logrusLogger) WithFields(fields Fields) Logger {
+func (l *LogrusLogger) WithFields(fields Fields) Logger {
 	newLogger := l.log.WithFields(logrus.Fields(fields))
-	return &logrusLogger{newLogger}
+	return &LogrusLogger{newLogger}
 }
 
-func (l *logrusLogger) WithError(err error) Logger {
+func (l *LogrusLogger) WithError(err error) Logger {
 	return l.WithFields(Fields{"error": err})
 }
 
-func (l *logrusLogger) Logf(level Level, format string, args ...interface{}) {
+func (l *LogrusLogger) Logf(level Level, format string, args ...interface{}) {
 	switch level {
 	case DebugLevel:
 		l.Debugf(format, args...)
