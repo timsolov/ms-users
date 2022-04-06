@@ -17,7 +17,9 @@ type DB struct {
 }
 
 func New(ctx context.Context, dsn string, maxConns, maxIdle int, connLifeTime time.Duration) (*DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn))
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		DisableAutomaticPing: true,
+	})
 	if err != nil {
 		return nil, err
 	}
