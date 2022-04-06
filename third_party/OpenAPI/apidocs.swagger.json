@@ -9,6 +9,8 @@
       "name": "UserService"
     }
   ],
+  "host": "localhost",
+  "basePath": "/ms-users",
   "schemes": [
     "http"
   ],
