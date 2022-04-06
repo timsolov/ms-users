@@ -21,7 +21,7 @@ import (
 func main() {
 	cfg := conf.New()
 
-	log := logger.NewLogrusLogger(cfg.LOG().Level, cfg.LOG().Json, cfg.LOG().TimeFormat, false)
+	log := logger.NewLogrusLogger(cfg.LOG.Level, cfg.LOG.Json, cfg.LOG.TimeFormat, false)
 	grpclog.SetLoggerV2(log)
 
 	log.Infof("application started")
@@ -36,10 +36,10 @@ func main() {
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	d, err := postgres.New(
 		timeoutCtx,
-		cfg.DB().DSN(),
-		cfg.DB().OpenLimit,
-		cfg.DB().IdleLimit,
-		cfg.DB().ConnLife,
+		cfg.DB.DSN(),
+		cfg.DB.OpenLimit,
+		cfg.DB.IdleLimit,
+		cfg.DB.ConnLife,
 	)
 	if err != nil {
 		log.Errorf("connect to db: %v", err)
@@ -51,7 +51,7 @@ func main() {
 	grpcErr := grpc_server.Run(
 		grpcCtx,
 		log,
-		cfg.GRPC().Addr(), // listen incoming port for gRPC
+		cfg.GRPC.Addr(), // listen incoming host:port for gRPC server
 		func(s grpc.ServiceRegistrar) {
 			pb.RegisterUserServiceServer(s, web.New(d))
 		},
@@ -61,8 +61,8 @@ func main() {
 	grpcGwErr := grpc_gateway.Run(
 		grpcGwCtx,
 		log,
-		cfg.HTTP().Addr(), // listen incoming port for rest api
-		cfg.GRPC().Addr(), // addr for connection to gRPC server
+		cfg.HTTP.Addr(), // listen incoming host:port for rest api
+		cfg.GRPC.Addr(), // connect to gRPC server host:port
 		[]grpc_gateway.RegisterServiceHandlerFunc{
 			pb.RegisterUserServiceHandler,
 		},

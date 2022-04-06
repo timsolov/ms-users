@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/caarlos0/env/v6 v6.9.1
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
