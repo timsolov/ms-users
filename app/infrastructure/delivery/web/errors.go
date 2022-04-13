@@ -20,15 +20,19 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 }
 
 func BadRequest(ctx context.Context, err error) error {
-	return status.Error(codes.InvalidArgument, err.Error())
+	return Custom(ctx, codes.InvalidArgument, http.StatusBadRequest, err)
+}
+
+func Forbidden(ctx context.Context) error {
+	return Custom(ctx, codes.PermissionDenied, http.StatusForbidden, nil)
 }
 
 func Internal(ctx context.Context, format string, args ...interface{}) error {
 	//TODO: write log to console
-	return status.Error(codes.Internal, "internal")
+	return Custom(ctx, codes.Internal, http.StatusInternalServerError, nil)
 }
 
-func Custom(ctx context.Context, statusCode int, err error) error {
+func Custom(ctx context.Context, code codes.Code, statusCode int, err error) error {
 	_ = grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(statusCode)))
-	return status.Error(codes.Unknown, err.Error())
+	return status.Error(code, err.Error())
 }

@@ -3,11 +3,14 @@ package web
 import (
 	"context"
 
+	"github.com/pkg/errors"
+	"github.com/timsolov/ms-users/app/domain/entity"
 	"github.com/timsolov/ms-users/app/pb"
 	"github.com/timsolov/ms-users/app/usecase/create_user"
+	"github.com/timsolov/ms-users/app/usecase/profile"
 )
 
-// stub: s *server UserServiceServer
+// stub: s *Server pb.UserServiceServer
 
 // Creates new user.
 //
@@ -46,25 +49,29 @@ func (s *Server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.
 	}, nil
 }
 
-// List users.
+// Profile detail info.
 //
-// Returns the list of users records.
-// Maximum records per request is 100.
-// Pagination available by using offset, limit.
-func (s *Server) ListUsers(_ context.Context, query *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
-	panic("not implemented")
-}
+// Profile returns user detail info.
+func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.ProfileResponse, error) {
+	userID, err := XUserId(ctx)
+	if err != nil {
+		return nil, Forbidden(ctx)
+	}
 
-// Update user info.
-//
-// Update user info fully or partial.
-func (s *Server) UpdateUser(_ context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	panic("not implemented")
-}
+	user, err := s.profile.Do(ctx, &profile.Profile{UserID: userID})
+	if err != nil {
+		switch errors.Cause(err) {
+		case entity.ErrNotFound:
+			return &pb.ProfileResponse{}, BadRequest(ctx, err)
+		default:
+			return &pb.ProfileResponse{}, Internal(ctx, "")
+		}
+	}
 
-// UserDetail detail info.
-//
-// UserDetail returns user detail info.
-func (s *Server) UserDetail(context.Context, *pb.UserDetailRequest) (*pb.UserDetailResponse, error) {
-	panic("not implemented")
+	return &pb.ProfileResponse{
+		UserId:    user.UserID.String(),
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+	}, nil
 }
