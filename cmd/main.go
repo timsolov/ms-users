@@ -47,6 +47,9 @@ func main() {
 	}
 	cancel()
 
+	// migrate db if need
+	ParseParams(log, d)
+
 	grpcCtx, grpcCancel := context.WithCancel(ctx)
 	grpcErr := grpc_server.Run(
 		grpcCtx,

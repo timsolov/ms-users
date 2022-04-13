@@ -2,96 +2,68 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/google/uuid"
+	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/jmoiron/sqlx"
 	"github.com/timsolov/ms-users/app/domain/entity"
-	"github.com/timsolov/ms-users/app/domain/repository"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
+// DB describes
 type DB struct {
-	db *gorm.DB
+	db *sqlx.DB
 }
 
 func New(ctx context.Context, dsn string, maxConns, maxIdle int, connLifeTime time.Duration) (*DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		DisableAutomaticPing: true,
-	})
+	db, err := sqlx.ConnectContext(ctx, "pgx", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	d, err := db.DB()
+	db.SetMaxOpenConns(maxConns)
+	db.SetMaxIdleConns(maxIdle)
+	db.SetConnMaxLifetime(connLifeTime)
+	// db.SetConnMaxIdleTime(connIdleTime)
+
+	for i := 0; i < 5; i++ {
+		if err := db.Ping(); err == nil {
+			return &DB{db: db}, nil
+		} else {
+			fmt.Println("can't connect to DB retry after 2 seconds")
+			time.Sleep(2 * time.Second)
+		}
+	}
+
+	return nil, fmt.Errorf("can't connect to DB: %s", dsn)
+}
+
+// CreateUser creates new user record
+func (d *DB) CreateUser(ctx context.Context, m *entity.User) error {
+	if m.UserID == uuid.Nil {
+		m.UserID = uuid.New()
+	}
+	if m.CreatedAt.IsZero() || m.UpdatedAt.IsZero() {
+		now := time.Now()
+		m.CreatedAt = now
+		m.UpdatedAt = now
+	}
+
+	err := d.execr(ctx, 1,
+		`INSERT 
+			INTO "users" (user_id, email, first_name, last_name, created_at, updated_at) 
+			VALUES (?,?,?,?,?,?)`,
+		m.UserID, m.Email, m.FirstName, m.LastName, m.CreatedAt, m.UpdatedAt)
 	if err != nil {
-		return nil, err
-	}
-
-	// Connections Pool settings:
-	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	d.SetMaxOpenConns(maxConns)
-
-	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	d.SetMaxIdleConns(maxIdle)
-
-	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
-	d.SetConnMaxLifetime(connLifeTime)
-
-	if err := d.PingContext(ctx); err != nil {
-		return nil, err
-	}
-
-	return &DB{db: db}, err
-}
-
-func (d *DB) SqlDB() (*sql.DB, error) {
-	return d.db.DB()
-}
-
-// Stats returns database statistics.
-func (d *DB) Stats() (stats sql.DBStats) {
-	db, err := d.SqlDB()
-	if err != nil {
-		return
-	}
-	return db.Stats()
-}
-
-func (d *DB) GormDB() *gorm.DB {
-	return d.db
-}
-
-func (d *DB) Atomic(ctx context.Context, fn func(r repository.Repository) error) error {
-	db := d.db.WithContext(ctx)
-
-	tx := db.Begin()
-	if tx.Error != nil {
-		return errors.Wrap(tx.Error, "begin tx")
-	}
-	defer tx.Rollback()
-
-	if err := fn(&DB{tx}); err != nil {
-		tx.Rollback()
 		return err
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		return errors.Wrap(err, "commit tx")
 	}
 
 	return nil
 }
 
-// E helper function to replace specific driver related NotFound error to generic between all db drivers.
-// Other errors will be returned without replacing. (gorm.ErrRecordNotFound -> entity.ErrNotFound, other error -> other error)
-func E(err error) error {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return entity.ErrNotFound
-	}
-	if IsUniqueViolationErr(err) {
-		return entity.ErrNotUnique
-	}
-	return err
+// Profile returns user record
+func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error) {
+	var user entity.User
+	return user, E(d.get(ctx, &user, "SELECT user_id, email, first_name, last_name, created_at, updated_at FROM users WHERE user_id = ?", userID))
 }
