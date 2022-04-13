@@ -23,12 +23,6 @@ import (
 // }
 // ```
 func (s *Server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	// nolint:gocritic
-	// userID := grpc_gateway.UserID(ctx)
-	// if userID == "" {
-	// 	return &pb.CreateUserResponse{}, ErrAuthRequired
-	// }
-
 	if stErr := in.Validate(); stErr != nil {
 		return &pb.CreateUserResponse{}, stErr
 	}
@@ -41,12 +35,12 @@ func (s *Server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.
 
 	userID, err := s.createUser.Do(ctx, &createUser)
 	if err != nil {
-		return &pb.CreateUserResponse{}, Internal(ctx, "usecase NewUser: %s", err)
+		return &pb.CreateUserResponse{}, Internal(ctx, s.log, "usecase createUser: %s", err)
 	}
 
 	return &pb.CreateUserResponse{
 		UserId: userID.String(),
-	}, nil
+	}, OK(ctx)
 }
 
 // Profile detail info.
@@ -62,9 +56,9 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 	if err != nil {
 		switch errors.Cause(err) {
 		case entity.ErrNotFound:
-			return &pb.ProfileResponse{}, BadRequest(ctx, err)
+			return &pb.ProfileResponse{}, Forbidden(ctx)
 		default:
-			return &pb.ProfileResponse{}, Internal(ctx, "")
+			return &pb.ProfileResponse{}, Internal(ctx, s.log, "usecase profile: %s", err)
 		}
 	}
 
@@ -73,5 +67,5 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 		Email:     user.Email,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
-	}, nil
+	}, OK(ctx)
 }

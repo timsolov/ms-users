@@ -12,7 +12,7 @@ func (d *DB) get(ctx context.Context, dst interface{}, query string, args ...int
 }
 
 func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interface{}) error {
-	r, err := d.db.ExecContext(ctx, query, args...)
+	r, err := d.db.ExecContext(ctx, d.db.Rebind(query), args...)
 
 	if err != nil {
 		return err

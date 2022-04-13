@@ -56,7 +56,7 @@ func main() {
 		log,
 		cfg.GRPC.Addr(), // listen incoming host:port for gRPC server
 		func(s grpc.ServiceRegistrar) {
-			pb.RegisterUserServiceServer(s, web.New(d))
+			pb.RegisterUserServiceServer(s, web.New(log, d))
 		},
 	)
 

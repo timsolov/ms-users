@@ -65,5 +65,21 @@ func (d *DB) CreateUser(ctx context.Context, m *entity.User) error {
 // Profile returns user record
 func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error) {
 	var user entity.User
-	return user, E(d.get(ctx, &user, "SELECT user_id, email, first_name, last_name, created_at, updated_at FROM users WHERE user_id = ?", userID))
+
+	query := "SELECT user_id, email, first_name, last_name, created_at, updated_at FROM users WHERE user_id = ?"
+
+	rows, err := d.db.QueryContext(ctx, d.db.Rebind(query), userID)
+	if err != nil {
+		return user, E(err)
+	}
+
+	if rows.Next() {
+		err = rows.Scan(&user.UserID, &user.Email, &user.FirstName, &user.LastName, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			return user, E(err)
+		}
+		return user, nil
+	}
+
+	return user, entity.ErrNotFound
 }
