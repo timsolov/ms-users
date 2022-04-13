@@ -19,7 +19,7 @@ func TestDB_NewUser_DelUser(t *testing.T) {
 
 	ctx := context.Background()
 
-	d, err := postgres.New(ctx, cfg.DB().DSN(), 1, 1, 1*time.Minute)
+	d, err := postgres.New(ctx, cfg.DB.DSN(), 1, 1, 1*time.Minute)
 	assert.NoError(t, err)
 
 	user := entity.User{
@@ -36,7 +36,7 @@ func TestDB_User(t *testing.T) {
 
 	ctx := context.Background()
 
-	d, err := postgres.New(ctx, cfg.DB().DSN(), 1, 1, 1*time.Minute)
+	d, err := postgres.New(ctx, cfg.DB.DSN(), 1, 1, 1*time.Minute)
 	assert.NoError(t, err)
 
 	user, clean := testutils.NewUser(t, d)
@@ -53,7 +53,7 @@ func TestDB_UpdUser(t *testing.T) {
 
 	ctx := context.Background()
 
-	d, err := postgres.New(ctx, cfg.DB().DSN(), 1, 1, 1*time.Minute)
+	d, err := postgres.New(ctx, cfg.DB.DSN(), 1, 1, 1*time.Minute)
 	assert.NoError(t, err)
 
 	user, clean := testutils.NewUser(t, d)
