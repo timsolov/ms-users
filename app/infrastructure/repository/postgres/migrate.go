@@ -34,6 +34,7 @@ func (d *DB) Migrate(migrateCmd string) (stepsDone int, err error) {
 	if steps != 0 {
 		migrations := &migrate.EmbedFileSystemMigrationSource{
 			FileSystem: fs,
+			Root:       "migrations",
 		}
 
 		var direction migrate.MigrationDirection
@@ -45,12 +46,7 @@ func (d *DB) Migrate(migrateCmd string) (stepsDone int, err error) {
 			steps = -steps
 		}
 
-		db, err := d.SqlDB()
-		if err != nil {
-			return 0, errors.Wrap(err, "failed to get SqlDB")
-		}
-
-		n, err := migrate.ExecMax(db, "postgres", migrations, direction, steps)
+		n, err := migrate.ExecMax(d.db.DB, "postgres", migrations, direction, steps)
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to execute migrations")
 		}

@@ -68,13 +68,15 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 	oa := getOpenAPIHandler()
 
 	const (
-		openApiPath    = "/api/swagger/"
+		openApiPath    = "/swagger/"
 		prometheusPath = "/metric"
 	)
 
+	loggerMw := LogRequest(log)
+
 	gwServer := &http.Server{
 		Addr: gatewayAddr,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		Handler: loggerMw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(r.URL.Path, openApiPath) {
 				http.StripPrefix(openApiPath, oa).ServeHTTP(w, r)
 				return
@@ -83,11 +85,9 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 				http.StripPrefix(prometheusPath, promhttp.Handler()).ServeHTTP(w, r)
 				return
 			}
-			// nolint:gocritic
-			// loggerMw := LogRequest(log)
-			// loggerMw(gwmux).ServeHTTP(w, r)
+
 			gwmux.ServeHTTP(w, r)
-		}),
+		})),
 	}
 
 	log.Infof("Serving gRPC-Gateway http://%s", gatewayAddr)

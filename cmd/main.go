@@ -27,39 +27,46 @@ func main() {
 	log.Infof("application started")
 	defer log.Infof("application finished")
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer close(done)
+
+	go func() {
+		<-done
+		log.Errorf("SIGTERM detected")
+		cancel()
+	}()
 
 	// create connetion to PostgreSQL
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	d, err := postgres.New(
-		timeoutCtx,
+		ctx,
 		cfg.DB.DSN(),
-		cfg.DB.OpenLimit,
-		cfg.DB.IdleLimit,
-		cfg.DB.ConnLife,
+		postgres.SetMaxConns(cfg.DB.OpenLimit, cfg.DB.IdleLimit),
+		postgres.SetConnsMaxLifeTime(cfg.DB.ConnLife, 0),
+		postgres.SetLogger(log),
+		postgres.SetReconnectTimeout(cfg.DB.ReconnectTimeout),
 	)
 	if err != nil {
 		log.Errorf("connect to db: %v", err)
 		return
 	}
-	cancel()
 
-	grpcCtx, grpcCancel := context.WithCancel(ctx)
+	// migrate db if need
+	ParseParams(log, d)
+
 	grpcErr := grpc_server.Run(
-		grpcCtx,
+		ctx,
 		log,
 		cfg.GRPC.Addr(), // listen incoming host:port for gRPC server
 		func(s grpc.ServiceRegistrar) {
-			pb.RegisterUserServiceServer(s, web.New(d))
+			pb.RegisterUserServiceServer(s, web.New(log, d))
 		},
 	)
 
-	grpcGwCtx, grpcGwCancel := context.WithCancel(ctx)
 	grpcGwErr := grpc_gateway.Run(
-		grpcGwCtx,
+		ctx,
 		log,
 		cfg.HTTP.Addr(), // listen incoming host:port for rest api
 		cfg.GRPC.Addr(), // connect to gRPC server host:port
@@ -69,16 +76,14 @@ func main() {
 	)
 
 	select {
-	case <-done:
-		log.Infof("SIGTERM detected")
+	case <-ctx.Done():
 	case err := <-grpcErr:
 		log.Errorf("gRPC server error: %s", err)
 	case err := <-grpcGwErr:
 		log.Errorf("gRPC gateway error: %s", err)
 	}
 
-	grpcCancel()
-	grpcGwCancel()
+	cancel()
 
 	time.Sleep(1 * time.Second)
 }

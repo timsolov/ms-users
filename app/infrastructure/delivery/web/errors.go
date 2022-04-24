@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/timsolov/ms-users/app/infrastructure/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -20,15 +21,27 @@ func Errorf(code codes.Code, format string, args ...interface{}) error {
 }
 
 func BadRequest(ctx context.Context, err error) error {
-	return status.Error(codes.InvalidArgument, err.Error())
+	return Custom(ctx, codes.InvalidArgument, http.StatusBadRequest, err)
 }
 
-func Internal(ctx context.Context, format string, args ...interface{}) error {
-	//TODO: write log to console
-	return status.Error(codes.Internal, "internal")
+func Forbidden(ctx context.Context) error {
+	return Custom(ctx, codes.PermissionDenied, http.StatusForbidden, nil)
 }
 
-func Custom(ctx context.Context, statusCode int, err error) error {
+func Internal(ctx context.Context, log logger.Logger, format string, args ...interface{}) error {
+	log.Errorf(format, args...)
+	return Custom(ctx, codes.Internal, http.StatusInternalServerError, nil)
+}
+
+func Custom(ctx context.Context, code codes.Code, statusCode int, err error) error {
 	_ = grpc.SetHeader(ctx, metadata.Pairs("x-http-code", strconv.Itoa(statusCode)))
-	return status.Error(codes.Unknown, err.Error())
+	if err != nil {
+		return status.Error(code, err.Error())
+	}
+	return status.Error(code, "")
+}
+
+func OK(ctx context.Context) error {
+	_ = grpc.SetHeader(ctx, metadata.Pairs("x-http-code", "200"))
+	return nil
 }

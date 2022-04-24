@@ -6,8 +6,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/timsolov/ms-users/app/domain/entity"
-	"github.com/timsolov/ms-users/app/domain/repository"
 )
+
+// Repository describes repository contract
+type Repository interface {
+	// CreateUser creates new user record
+	CreateUser(ctx context.Context, m *entity.User) error
+}
 
 // CreateUser describes parameters
 type CreateUser struct {
@@ -18,10 +23,10 @@ type CreateUser struct {
 
 // CreateUserCommand describes dependencies
 type CreateUserCommand struct {
-	repo repository.Repository
+	repo Repository
 }
 
-func NewCreateUserCommand(repo repository.Repository) CreateUserCommand {
+func NewCreateUserCommand(repo Repository) CreateUserCommand {
 	return CreateUserCommand{
 		repo: repo,
 	}
@@ -37,7 +42,7 @@ func (uc CreateUserCommand) Do(ctx context.Context, cmd *CreateUser) (userID uui
 		UpdatedAt: time.Now(),
 	}
 
-	err = uc.repo.NewUser(ctx, &user)
+	err = uc.repo.CreateUser(ctx, &user)
 	if err != nil {
 		return uuid.Nil, err
 	}

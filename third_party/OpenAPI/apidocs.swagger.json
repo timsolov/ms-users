@@ -9,8 +9,7 @@
       "name": "UserService"
     }
   ],
-  "host": "localhost",
-  "basePath": "/ms-users",
+  "basePath": "/ms-users/api",
   "schemes": [
     "http"
   ],
@@ -21,16 +20,16 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/users": {
+    "/v1/profile": {
       "get": {
-        "summary": "List users.",
-        "description": "Returns the list of users records.\nMaximum records per request is 100.\nPagination available by using offset, limit.",
-        "operationId": "UserService_ListUsers",
+        "summary": "Profile detail info.",
+        "description": "Profile returns user detail info.",
+        "operationId": "UserService_Profile",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListUsersResponse"
+              "$ref": "#/definitions/v1ProfileResponse"
             }
           },
           "default": {
@@ -40,26 +39,17 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          }
-        ],
         "tags": [
           "UserService"
+        ],
+        "security": [
+          {
+            "X-User-Id": []
+          }
         ]
-      },
+      }
+    },
+    "/v1/users": {
       "post": {
         "summary": "Creates new user.",
         "description": "For creating new user you have to provide:\n- email;\n- password;\n```json\n{\n  \"name\": \"value\"\n}\n```",
@@ -86,70 +76,6 @@
             "schema": {
               "$ref": "#/definitions/v1CreateUserRequest"
             }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      },
-      "put": {
-        "summary": "Update user info.",
-        "description": "Update user info fully or partial.",
-        "operationId": "UserService_UpdateUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UpdateUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1UpdateUserRequest"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/users/{user_id}": {
-      "get": {
-        "summary": "UserDetail detail info.",
-        "description": "UserDetail returns user detail info.",
-        "operationId": "UserService_UserDetail",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UserDetailResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
           }
         ],
         "tags": [
@@ -211,49 +137,7 @@
         }
       }
     },
-    "v1ListUsersResponse": {
-      "type": "object",
-      "properties": {
-        "users": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1User"
-          }
-        }
-      }
-    },
-    "v1UpdateUserRequest": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/v1User"
-        },
-        "update_mask": {
-          "type": "string"
-        }
-      }
-    },
-    "v1UpdateUserResponse": {
-      "type": "object"
-    },
-    "v1User": {
-      "type": "object",
-      "properties": {
-        "user_id": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        }
-      }
-    },
-    "v1UserDetailResponse": {
+    "v1ProfileResponse": {
       "type": "object",
       "properties": {
         "user_id": {

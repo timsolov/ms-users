@@ -8,18 +8,22 @@ import (
 )
 
 func buildBadRequest(errs validation.Errors) error {
-	errs = errs.Filter().(validation.Errors)
-
-	if errs == nil {
+	err := errs.Filter()
+	if err == nil {
 		return nil
 	}
 
 	br := &errdetails.BadRequest{}
 	for key, err := range errs {
+		if err == nil {
+			continue
+		}
+
 		v := &errdetails.BadRequest_FieldViolation{
 			Field:       key,
 			Description: err.Error(),
 		}
+
 		br.FieldViolations = append(br.FieldViolations, v)
 	}
 

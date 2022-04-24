@@ -2,96 +2,147 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
-	"github.com/pkg/errors"
-	"github.com/timsolov/ms-users/app/domain/entity"
-	"github.com/timsolov/ms-users/app/domain/repository"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/jmoiron/sqlx"
+	"github.com/timsolov/ms-users/app/infrastructure/logger"
 )
 
+const _defaultReconnectTimeout = time.Second
+
+// DB describes
 type DB struct {
-	db *gorm.DB
+	db                         *sqlx.DB
+	reconnectTimeout           time.Duration
+	maxOpenConns, maxIdleConns int
+	openLifeTime, idleLifeTime time.Duration
+	log                        logger.Logger
 }
 
-func New(ctx context.Context, dsn string, maxConns, maxIdle int, connLifeTime time.Duration) (*DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		DisableAutomaticPing: true,
-	})
-	if err != nil {
-		return nil, err
+type Option func(*DB)
+
+func SetReconnectTimeout(t time.Duration) Option {
+	return func(d *DB) {
+		d.reconnectTimeout = t
 	}
-
-	d, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
-
-	// Connections Pool settings:
-	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	d.SetMaxOpenConns(maxConns)
-
-	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	d.SetMaxIdleConns(maxIdle)
-
-	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
-	d.SetConnMaxLifetime(connLifeTime)
-
-	if err := d.PingContext(ctx); err != nil {
-		return nil, err
-	}
-
-	return &DB{db: db}, err
 }
 
-func (d *DB) SqlDB() (*sql.DB, error) {
-	return d.db.DB()
+func SetMaxConns(maxOpen, maxIdle int) Option {
+	return func(d *DB) {
+		d.maxOpenConns = maxOpen
+		d.maxIdleConns = maxIdle
+	}
 }
 
-// Stats returns database statistics.
-func (d *DB) Stats() (stats sql.DBStats) {
-	db, err := d.SqlDB()
-	if err != nil {
+func SetConnsMaxLifeTime(open, idle time.Duration) Option {
+	return func(d *DB) {
+		d.openLifeTime = open
+		d.idleLifeTime = idle
+	}
+}
+
+func SetLogger(log logger.Logger) Option {
+	return func(d *DB) {
+		d.log = log
+	}
+}
+
+func New(ctx context.Context, dsn string, opts ...Option) (*DB, error) {
+	d := &DB{}
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	reconnectTimeout := _defaultReconnectTimeout
+	if d.reconnectTimeout > 0 {
+		reconnectTimeout = d.reconnectTimeout
+	}
+
+	var (
+		db  *sqlx.DB
+		err error
+	)
+
+	for {
+		db, err = sqlx.ConnectContext(ctx, "pgx", dsn)
+		if err != nil {
+			d.errorf(err, "can't connect to DB: %s", dsn)
+			d.infof("wait %s", reconnectTimeout)
+
+			select {
+			case <-ctx.Done():
+				return nil, err
+			case <-time.After(reconnectTimeout):
+			}
+		} else {
+			break
+		}
+	}
+
+	d.db = db
+
+	if d.maxOpenConns > 0 {
+		db.SetMaxOpenConns(d.maxOpenConns)
+	}
+	if d.maxIdleConns > 0 {
+		db.SetMaxIdleConns(d.maxIdleConns)
+	}
+	if d.openLifeTime > 0 {
+		db.SetConnMaxLifetime(d.openLifeTime)
+	}
+	if d.idleLifeTime > 0 {
+		db.SetConnMaxIdleTime(d.idleLifeTime)
+	}
+
+	if d.reconnectTimeout > 0 {
+		go d.reconnect(ctx)
+	}
+
+	return d, nil
+}
+
+func (d *DB) reconnect(ctx context.Context) {
+	d.infof("postgres reconnection goroutine started")
+	defer d.infof("postgres reconnection goroutine finished")
+
+	ticker := time.NewTicker(d.reconnectTimeout)
+	connected := true
+
+	for {
+		select {
+		case <-ticker.C:
+			err := d.db.PingContext(ctx)
+			if err != nil {
+				if connected {
+					connected = false
+					d.errorf(err, "postgres connection lost")
+					continue
+				}
+				d.errorf(err, "postgres reconnection")
+				continue
+			}
+			if !connected {
+				connected = true
+				d.infof("postgres connection established")
+			}
+		case <-ctx.Done():
+			ticker.Stop()
+			return
+		}
+	}
+}
+
+func (d *DB) errorf(err error, format string, args ...interface{}) {
+	if d.log == nil {
 		return
 	}
-	return db.Stats()
+	d.log.WithError(err).Errorf(format, args...)
 }
 
-func (d *DB) GormDB() *gorm.DB {
-	return d.db
-}
-
-func (d *DB) Atomic(ctx context.Context, fn func(r repository.Repository) error) error {
-	db := d.db.WithContext(ctx)
-
-	tx := db.Begin()
-	if tx.Error != nil {
-		return errors.Wrap(tx.Error, "begin tx")
+func (d *DB) infof(format string, args ...interface{}) {
+	if d.log == nil {
+		return
 	}
-	defer tx.Rollback()
-
-	if err := fn(&DB{tx}); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		return errors.Wrap(err, "commit tx")
-	}
-
-	return nil
-}
-
-// E helper function to replace specific driver related NotFound error to generic between all db drivers.
-// Other errors will be returned without replacing. (gorm.ErrRecordNotFound -> entity.ErrNotFound, other error -> other error)
-func E(err error) error {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return entity.ErrNotFound
-	}
-	if IsUniqueViolationErr(err) {
-		return entity.ErrNotUnique
-	}
-	return err
+	d.log.Infof(format, args...)
 }

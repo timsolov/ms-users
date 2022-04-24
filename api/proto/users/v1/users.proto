@@ -3,7 +3,7 @@ syntax="proto3";
 package users.v1;
 
 import "google/api/annotations.proto";
-import "google/protobuf/field_mask.proto";
+// import "google/protobuf/field_mask.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 // Defines the import path that should be used to import the generated package,
@@ -16,8 +16,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     version: "1.0"
   }
   schemes: HTTP
-  host: "localhost"
-  base_path: "/ms-users"
+  base_path: "/ms-users/api"
   consumes: "application/json"
   produces: "application/json"
   security_definitions: {
@@ -51,45 +50,20 @@ service UserService {
   // ```
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
-      post: "/api/v1/users"
-      body: "*"
-    };
-    // option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-    //   security: {
-    //       security_requirement: {
-    //           key: "X-User-Id";
-    //       }
-    //   }
-    // };
-  }
-
-  // List users.
-  //
-  // Returns the list of users records.
-  // Maximum records per request is 100.
-  // Pagination available by using offset, limit.
-  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
-    option (google.api.http) = {
-      get: "/api/v1/users"
-    };
-  }
-
-  // Update user info.
-  //
-  // Update user info fully or partial.
-  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
-    option (google.api.http) = {
-      put: "/api/v1/users"
+      post: "/v1/users"
       body: "*"
     };
   }
 
-  // UserDetail detail info.
+  // Profile detail info.
   //
-  // UserDetail returns user detail info.
-  rpc UserDetail (UserDetailRequest) returns (UserDetailResponse) {
+  // Profile returns user detail info.
+  rpc Profile (ProfileRequest) returns (ProfileResponse) {
     option (google.api.http) = {
-      get: "/api/v1/users/{user_id}"
+      get: "/v1/profile"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {security_requirement: {key: "X-User-Id"}}
     };
   }
 }
@@ -105,34 +79,9 @@ message CreateUserResponse {
   string user_id    = 1;
 }
 
-message ListUsersRequest {
-  int64 offset    = 1;
-  int64 limit     = 2;
-}
+message ProfileRequest {}
 
-message User {
-  string user_id    = 1;
-  string email      = 2;
-  string first_name = 3;
-  string last_name  = 4;
-}
-
-message ListUsersResponse {
-  repeated User users = 1;
-}
-
-message UpdateUserRequest {
-  User user = 1;
-  google.protobuf.FieldMask update_mask = 6;
-}
-
-message UpdateUserResponse {}
-
-message UserDetailRequest {
-  string user_id   = 1;
-}
-
-message UserDetailResponse {
+message ProfileResponse {
   string user_id    = 1;
   string email      = 2;
   string first_name = 3;
