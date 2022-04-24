@@ -31,9 +31,10 @@ type DB struct {
 	SSL      string `env:"DB_SSL,required"`
 	TimeZone string `env:"DB_TIMEZONE,required"`
 
-	OpenLimit int           `env:"DB_OPEN_LIMIT" envDefault:"5"`
-	IdleLimit int           `env:"DB_IDLE_LIMIT" envDefault:"5"`
-	ConnLife  time.Duration `env:"DB_CONN_LIFE" envDefault:"5m"`
+	OpenLimit        int           `env:"DB_OPEN_LIMIT" envDefault:"5"`
+	IdleLimit        int           `env:"DB_IDLE_LIMIT" envDefault:"5"`
+	ConnLife         time.Duration `env:"DB_CONN_LIFE" envDefault:"5m"`
+	ReconnectTimeout time.Duration `env:"DB_RECONNECT_TIMEOUT" envDefault:"1s"`
 }
 
 type GRPC struct {

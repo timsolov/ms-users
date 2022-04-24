@@ -2,84 +2,147 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/timsolov/ms-users/app/domain/entity"
+	"github.com/timsolov/ms-users/app/infrastructure/logger"
 )
+
+const _defaultReconnectTimeout = time.Second
 
 // DB describes
 type DB struct {
-	db *sqlx.DB
+	db                         *sqlx.DB
+	reconnectTimeout           time.Duration
+	maxOpenConns, maxIdleConns int
+	openLifeTime, idleLifeTime time.Duration
+	log                        logger.Logger
 }
 
-func New(ctx context.Context, dsn string, maxConns, maxIdle int, connLifeTime time.Duration) (*DB, error) {
-	db, err := sqlx.ConnectContext(ctx, "pgx", dsn)
-	if err != nil {
-		return nil, err
+type Option func(*DB)
+
+func SetReconnectTimeout(t time.Duration) Option {
+	return func(d *DB) {
+		d.reconnectTimeout = t
 	}
-
-	db.SetMaxOpenConns(maxConns)
-	db.SetMaxIdleConns(maxIdle)
-	db.SetConnMaxLifetime(connLifeTime)
-	// db.SetConnMaxIdleTime(connIdleTime)
-
-	for i := 0; i < 5; i++ {
-		if err := db.Ping(); err == nil {
-			return &DB{db: db}, nil
-		} else {
-			fmt.Println("can't connect to DB retry after 2 seconds")
-			time.Sleep(2 * time.Second)
-		}
-	}
-
-	return nil, fmt.Errorf("can't connect to DB: %s", dsn)
 }
 
-// CreateUser creates new user record
-func (d *DB) CreateUser(ctx context.Context, m *entity.User) error {
-	if m.UserID == uuid.Nil {
-		m.UserID = uuid.New()
+func SetMaxConns(maxOpen, maxIdle int) Option {
+	return func(d *DB) {
+		d.maxOpenConns = maxOpen
+		d.maxIdleConns = maxIdle
 	}
-	if m.CreatedAt.IsZero() || m.UpdatedAt.IsZero() {
-		now := time.Now()
-		m.CreatedAt = now
-		m.UpdatedAt = now
-	}
-
-	err := d.execr(ctx, 1,
-		`INSERT 
-			INTO "users" (user_id, email, first_name, last_name, created_at, updated_at) 
-			VALUES (?,?,?,?,?,?)`,
-		m.UserID, m.Email, m.FirstName, m.LastName, m.CreatedAt, m.UpdatedAt)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-// Profile returns user record
-func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error) {
-	var user entity.User
+func SetConnsMaxLifeTime(open, idle time.Duration) Option {
+	return func(d *DB) {
+		d.openLifeTime = open
+		d.idleLifeTime = idle
+	}
+}
 
-	query := "SELECT user_id, email, first_name, last_name, created_at, updated_at FROM users WHERE user_id = ?"
+func SetLogger(log logger.Logger) Option {
+	return func(d *DB) {
+		d.log = log
+	}
+}
 
-	rows, err := d.db.QueryContext(ctx, d.db.Rebind(query), userID)
-	if err != nil {
-		return user, E(err)
+func New(ctx context.Context, dsn string, opts ...Option) (*DB, error) {
+	d := &DB{}
+	for _, opt := range opts {
+		opt(d)
 	}
 
-	if rows.Next() {
-		err = rows.Scan(&user.UserID, &user.Email, &user.FirstName, &user.LastName, &user.CreatedAt, &user.UpdatedAt)
+	reconnectTimeout := _defaultReconnectTimeout
+	if d.reconnectTimeout > 0 {
+		reconnectTimeout = d.reconnectTimeout
+	}
+
+	var (
+		db  *sqlx.DB
+		err error
+	)
+
+	for {
+		db, err = sqlx.ConnectContext(ctx, "pgx", dsn)
 		if err != nil {
-			return user, E(err)
+			d.errorf(err, "can't connect to DB: %s", dsn)
+			d.infof("wait %s", reconnectTimeout)
+
+			select {
+			case <-ctx.Done():
+				return nil, err
+			case <-time.After(reconnectTimeout):
+			}
+		} else {
+			break
 		}
-		return user, nil
 	}
 
-	return user, entity.ErrNotFound
+	d.db = db
+
+	if d.maxOpenConns > 0 {
+		db.SetMaxOpenConns(d.maxOpenConns)
+	}
+	if d.maxIdleConns > 0 {
+		db.SetMaxIdleConns(d.maxIdleConns)
+	}
+	if d.openLifeTime > 0 {
+		db.SetConnMaxLifetime(d.openLifeTime)
+	}
+	if d.idleLifeTime > 0 {
+		db.SetConnMaxIdleTime(d.idleLifeTime)
+	}
+
+	if d.reconnectTimeout > 0 {
+		go d.reconnect(ctx)
+	}
+
+	return d, nil
+}
+
+func (d *DB) reconnect(ctx context.Context) {
+	d.infof("postgres reconnection goroutine started")
+	defer d.infof("postgres reconnection goroutine finished")
+
+	ticker := time.NewTicker(d.reconnectTimeout)
+	connected := true
+
+	for {
+		select {
+		case <-ticker.C:
+			err := d.db.PingContext(ctx)
+			if err != nil {
+				if connected {
+					connected = false
+					d.errorf(err, "postgres connection lost")
+					continue
+				}
+				d.errorf(err, "postgres reconnection")
+				continue
+			}
+			if !connected {
+				connected = true
+				d.infof("postgres connection established")
+			}
+		case <-ctx.Done():
+			ticker.Stop()
+			return
+		}
+	}
+}
+
+func (d *DB) errorf(err error, format string, args ...interface{}) {
+	if d.log == nil {
+		return
+	}
+	d.log.WithError(err).Errorf(format, args...)
+}
+
+func (d *DB) infof(format string, args ...interface{}) {
+	if d.log == nil {
+		return
+	}
+	d.log.Infof(format, args...)
 }
