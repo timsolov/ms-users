@@ -19,6 +19,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	openApiPath    = "/swagger/"
+	prometheusPath = "/metric/"
+)
+
 // RegisterServiceHandlerFunc func to register gRPC service handler.
 type RegisterServiceHandlerFunc func(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error
 
@@ -67,11 +72,6 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 	// prepare OpenAPI handler
 	oa := getOpenAPIHandler()
 
-	const (
-		openApiPath    = "/swagger/"
-		prometheusPath = "/metric"
-	)
-
 	loggerMw := LogRequest(log)
 
 	gwServer := &http.Server{
@@ -92,6 +92,7 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 
 	log.Infof("Serving gRPC-Gateway http://%s", gatewayAddr)
 	log.Infof("Serving OpenAPI Documentation on http://%s%s", gatewayAddr, openApiPath)
+	log.Infof("Serving Prometheus Metrics on http://%s%s", gatewayAddr, prometheusPath)
 	go func() {
 		errCh <- gwServer.ListenAndServe()
 		if err := gwServer.Shutdown(ctx); err != nil {

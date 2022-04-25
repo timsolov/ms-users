@@ -1,4 +1,13 @@
-BUF_VERSION:=1.1.0
+ifeq ($(shell git tag --contains HEAD),)
+  VERSION := $(shell git rev-parse --short HEAD)
+else
+  VERSION := $(shell git tag --contains HEAD)
+endif
+
+BUILDTIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+GOLDFLAGS += -X github.com/timsolov/ms-users/app/conf.Version=$(VERSION)
+GOLDFLAGS += -X github.com/timsolov/ms-users/app/conf.Buildtime=$(BUILDTIME)
+GOFLAGS = -ldflags "$(GOLDFLAGS)"
 
 .DEFAULT_GOAL := default
 
@@ -7,7 +16,7 @@ default: generate build
 
 .PHONY: build
 build:
-	go build -o service ./cmd/
+	go build -o service $(GOFLAGS) ./cmd/
 
 .PHONY: gen
 gen:

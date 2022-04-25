@@ -26,6 +26,7 @@ func main() {
 
 	log.Infof("application started")
 	defer log.Infof("application finished")
+	log.Infof("version: %s buildtime: %s", conf.Version, conf.Buildtime)
 
 	ctx, cancel := context.WithCancel(context.Background())
 

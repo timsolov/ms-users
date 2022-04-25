@@ -9,6 +9,11 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+var (
+	Version   string
+	Buildtime string
+)
+
 type Config struct {
 	APP  APP
 	DB   DB
@@ -68,16 +73,16 @@ type LOG struct {
 }
 
 var once sync.Once
+var config Config
 
 func New() Config {
-	var c Config
 	once.Do(func() {
-		if err := env.Parse(&c); err != nil {
+		if err := env.Parse(&config); err != nil {
 			panic("parsing configuration")
 		}
-		c.print()
+		config.print()
 	})
-	return c
+	return config
 }
 
 func (cfg *Config) print() {
