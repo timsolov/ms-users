@@ -17,7 +17,10 @@ func ParseParams(log logger.Logger, r repository.Repository) {
 		migrateCmd string
 	)
 
-	flag.StringVar(&migrateCmd, "migrate", "", "up - migrate all steps Up\ndown - migrate all steps Down\nnumber - amount of steps to migrate (if > 0 - migrate number steps up, if < 0 migrate number steps down)")
+	flag.StringVar(&migrateCmd, "migrate", "",
+		"up - migrate all steps Up\n"+
+			"down - migrate all steps Down\n"+
+			"number - amount of steps to migrate (if > 0 - migrate number steps up, if < 0 migrate number steps down)")
 	flag.Parse()
 
 	if len(migrateCmd) > 0 {

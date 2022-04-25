@@ -41,6 +41,7 @@ func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error)
 	if err != nil {
 		return user, E(err)
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		err = rows.Scan(&user.UserID, &user.Email, &user.FirstName, &user.LastName, &user.CreatedAt, &user.UpdatedAt)
@@ -48,6 +49,10 @@ func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error)
 			return user, E(err)
 		}
 		return user, nil
+	}
+	err = rows.Err()
+	if err != nil {
+		return user, E(err)
 	}
 
 	return user, entity.ErrNotFound
