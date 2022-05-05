@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/timsolov/ms-users/app/domain/entity"
-	"github.com/timsolov/ms-users/app/pb"
+	"github.com/timsolov/ms-users/app/infrastructure/delivery/web/pb"
 	"github.com/timsolov/ms-users/app/usecase/create_user"
 	"github.com/timsolov/ms-users/app/usecase/profile"
 )

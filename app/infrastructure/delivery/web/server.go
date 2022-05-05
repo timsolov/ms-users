@@ -2,8 +2,8 @@ package web
 
 import (
 	"github.com/timsolov/ms-users/app/domain/repository"
+	"github.com/timsolov/ms-users/app/infrastructure/delivery/web/pb"
 	"github.com/timsolov/ms-users/app/infrastructure/logger"
-	"github.com/timsolov/ms-users/app/pb"
 	"github.com/timsolov/ms-users/app/usecase/create_user"
 	"github.com/timsolov/ms-users/app/usecase/profile"
 )
