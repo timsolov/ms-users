@@ -12,7 +12,7 @@ GOFLAGS = -ldflags "$(GOLDFLAGS)"
 .DEFAULT_GOAL := default
 
 .PHONY: default
-default: generate build
+default: gen build
 
 .PHONY: build
 build:
