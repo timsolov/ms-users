@@ -1,11 +1,11 @@
 package web
 
 import (
-	"github.com/timsolov/ms-users/app/domain/repository"
-	"github.com/timsolov/ms-users/app/infrastructure/delivery/web/pb"
-	"github.com/timsolov/ms-users/app/infrastructure/logger"
-	"github.com/timsolov/ms-users/app/usecase/create_user"
-	"github.com/timsolov/ms-users/app/usecase/profile"
+	"ms-users/app/domain/repository"
+	"ms-users/app/infrastructure/delivery/web/pb"
+	"ms-users/app/infrastructure/logger"
+	"ms-users/app/usecase/create_user"
+	"ms-users/app/usecase/profile"
 )
 
 // Server implements the protobuf interface

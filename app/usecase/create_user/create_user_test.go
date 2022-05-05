@@ -5,8 +5,9 @@ import (
 	"reflect"
 	"testing"
 
+	"ms-users/app/domain/repository"
+
 	"github.com/google/uuid"
-	"github.com/timsolov/ms-users/app/domain/repository"
 )
 
 func TestCreateUserCommand_Do(t *testing.T) {

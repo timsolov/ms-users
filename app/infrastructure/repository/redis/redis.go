@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"ms-users/app/domain/entity"
+
 	"github.com/go-redis/redis/v8"
-	"github.com/timsolov/ms-users/app/domain/entity"
 )
 
 type Redis struct {

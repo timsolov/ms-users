@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/timsolov/ms-users/app/domain/entity"
+	"ms-users/app/domain/entity"
 )
 
 func TestProfileQuery_Do(t *testing.T) {

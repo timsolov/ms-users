@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"ms-users/app/infrastructure/logger"
+
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
-	"github.com/timsolov/ms-users/app/infrastructure/logger"
 )
 
 const _defaultReconnectTimeout = time.Second

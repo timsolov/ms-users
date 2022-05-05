@@ -4,8 +4,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/timsolov/ms-users/app/domain/repository"
-	"github.com/timsolov/ms-users/app/infrastructure/logger"
+	"ms-users/app/domain/repository"
+	"ms-users/app/infrastructure/logger"
 )
 
 type migrator interface {

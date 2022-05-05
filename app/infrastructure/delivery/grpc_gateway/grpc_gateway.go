@@ -9,10 +9,11 @@ import (
 	"strconv"
 	"strings"
 
+	"ms-users/app/infrastructure/logger"
+	"ms-users/third_party"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/timsolov/ms-users/app/infrastructure/logger"
-	"github.com/timsolov/ms-users/third_party"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"

@@ -1,4 +1,4 @@
-module github.com/timsolov/ms-users
+module ms-users
 
 go 1.17
 

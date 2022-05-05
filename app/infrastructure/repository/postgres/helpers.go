@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/timsolov/ms-users/app/domain/entity"
+	"ms-users/app/domain/entity"
 )
 
 func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interface{}) error {

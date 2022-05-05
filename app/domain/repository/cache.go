@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//go:generate mockgen -destination=../../infrastructure/repository/mockcache/mockcache.go -package=mockcache github.com/timsolov/ms-users/app/domain/repository Cache
+//go:generate mockgen -destination=../../infrastructure/repository/mockcache/mockcache.go -package=mockcache ms-users/app/domain/repository Cache
 
 type Cache interface {
 	TTL(ctx context.Context, key string) (time.Duration, error)

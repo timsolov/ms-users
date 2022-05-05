@@ -3,8 +3,9 @@ package profile
 import (
 	"context"
 
+	"ms-users/app/domain/entity"
+
 	"github.com/google/uuid"
-	"github.com/timsolov/ms-users/app/domain/entity"
 )
 
 // Repository describes repository contract

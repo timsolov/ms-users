@@ -3,11 +3,12 @@ package web
 import (
 	"context"
 
+	"ms-users/app/domain/entity"
+	"ms-users/app/infrastructure/delivery/web/pb"
+	"ms-users/app/usecase/create_user"
+	"ms-users/app/usecase/profile"
+
 	"github.com/pkg/errors"
-	"github.com/timsolov/ms-users/app/domain/entity"
-	"github.com/timsolov/ms-users/app/infrastructure/delivery/web/pb"
-	"github.com/timsolov/ms-users/app/usecase/create_user"
-	"github.com/timsolov/ms-users/app/usecase/profile"
 )
 
 // stub: s *Server pb.UserServiceServer

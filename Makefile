@@ -5,8 +5,8 @@ else
 endif
 
 BUILDTIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
-GOLDFLAGS += -X github.com/timsolov/ms-users/app/conf.Version=$(VERSION)
-GOLDFLAGS += -X github.com/timsolov/ms-users/app/conf.Buildtime=$(BUILDTIME)
+GOLDFLAGS += -X ms-users/app/conf.Version=$(VERSION)
+GOLDFLAGS += -X ms-users/app/conf.Buildtime=$(BUILDTIME)
 GOFLAGS = -ldflags "$(GOLDFLAGS)"
 
 .DEFAULT_GOAL := default

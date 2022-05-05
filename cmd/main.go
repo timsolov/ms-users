@@ -7,13 +7,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/timsolov/ms-users/app/conf"
-	"github.com/timsolov/ms-users/app/infrastructure/delivery/grpc_gateway"
-	"github.com/timsolov/ms-users/app/infrastructure/delivery/grpc_server"
-	"github.com/timsolov/ms-users/app/infrastructure/delivery/web"
-	"github.com/timsolov/ms-users/app/infrastructure/delivery/web/pb"
-	"github.com/timsolov/ms-users/app/infrastructure/logger"
-	"github.com/timsolov/ms-users/app/infrastructure/repository/postgres"
+	"ms-users/app/conf"
+	"ms-users/app/infrastructure/delivery/grpc_gateway"
+	"ms-users/app/infrastructure/delivery/grpc_server"
+	"ms-users/app/infrastructure/delivery/web"
+	"ms-users/app/infrastructure/delivery/web/pb"
+	"ms-users/app/infrastructure/logger"
+	"ms-users/app/infrastructure/repository/postgres"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 )
