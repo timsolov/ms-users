@@ -1,6 +1,7 @@
 Table users as U {
     user_id    UUID [pk]
     email      varchar [not null, unique]
+    password   varchar [not null]
     first_name varchar [not null]
     last_name  varchar [not null]
     created_at timestamptz [not null, note: 'when record created']

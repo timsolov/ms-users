@@ -22,9 +22,9 @@ func (d *DB) CreateUser(ctx context.Context, m *entity.User) error {
 
 	err := d.execr(ctx, 1,
 		`INSERT 
-			INTO "users" (user_id, email, first_name, last_name, created_at, updated_at) 
+			INTO "users" (user_id, email, password, first_name, last_name, created_at, updated_at) 
 			VALUES (?,?,?,?,?,?)`,
-		m.UserID, m.Email, m.FirstName, m.LastName, m.CreatedAt, m.UpdatedAt)
+		m.UserID, m.Email, m.Password, m.FirstName, m.LastName, m.CreatedAt, m.UpdatedAt)
 	if err != nil {
 		return err
 	}

@@ -10,6 +10,7 @@ import (
 type User struct {
 	UserID    uuid.UUID
 	Email     string
+	Password  string // encrypted password
 	FirstName string
 	LastName  string
 	CreatedAt time.Time
