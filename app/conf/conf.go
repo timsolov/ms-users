@@ -24,6 +24,7 @@ type Config struct {
 
 // APP describes
 type APP struct {
+	PrintConfig bool `env:"PRINT_CONFIG"`
 }
 
 // DB describes database config
@@ -80,7 +81,9 @@ func New() Config {
 		if err := env.Parse(&config); err != nil {
 			panic("parsing configuration")
 		}
-		config.print()
+		if config.APP.PrintConfig {
+			config.print()
+		}
 	})
 	return config
 }

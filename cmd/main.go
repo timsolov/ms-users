@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"ms-users/app/conf"
+	"ms-users/app/infrastructure/delivery/cli"
 	"ms-users/app/infrastructure/delivery/grpc_gateway"
 	"ms-users/app/infrastructure/delivery/grpc_server"
 	"ms-users/app/infrastructure/delivery/web"
@@ -24,10 +25,6 @@ func main() {
 
 	log := logger.NewLogrusLogger(cfg.LOG.Level, cfg.LOG.Json, cfg.LOG.TimeFormat, false)
 	grpclog.SetLoggerV2(log)
-
-	log.Infof("application started")
-	defer log.Infof("application finished")
-	log.Infof("version: %s buildtime: %s", conf.Version, conf.Buildtime)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -47,8 +44,8 @@ func main() {
 		cfg.DB.DSN(),
 		postgres.SetMaxConns(cfg.DB.OpenLimit, cfg.DB.IdleLimit),
 		postgres.SetConnsMaxLifeTime(cfg.DB.ConnLife, 0),
-		postgres.SetLogger(log),
-		postgres.SetReconnectTimeout(cfg.DB.ReconnectTimeout),
+		// postgres.SetLogger(log),
+		// postgres.SetReconnectTimeout(cfg.DB.ReconnectTimeout),
 	)
 	if err != nil {
 		log.Errorf("connect to db: %v", err)
@@ -56,7 +53,13 @@ func main() {
 	}
 
 	// migrate db if need
-	ParseParams(log, d)
+	err = cli.Run(
+		cli.NewMigrateCmd(log, d),
+	)
+	if err != nil {
+		log.Errorf("cli: %v", err)
+		return
+	}
 
 	grpcErr := grpc_server.Run(
 		ctx,
@@ -76,6 +79,10 @@ func main() {
 			pb.RegisterUserServiceHandler,
 		},
 	)
+
+	log.Infof("application started")
+	defer log.Infof("application finished")
+	log.Infof("version: %s buildtime: %s", conf.Version, conf.Buildtime)
 
 	select {
 	case <-ctx.Done():
