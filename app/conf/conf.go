@@ -3,6 +3,7 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -79,7 +80,8 @@ var config Config
 func New() Config {
 	once.Do(func() {
 		if err := env.Parse(&config); err != nil {
-			panic("parsing configuration")
+			fmt.Println("parsing configuration:", err)
+			os.Exit(-1)
 		}
 		if config.APP.PrintConfig {
 			config.print()
@@ -91,7 +93,8 @@ func New() Config {
 func (cfg *Config) print() {
 	jsonConfig, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
-		panic(err)
+		fmt.Println("marshal config:", err)
+		os.Exit(-1)
 	}
 	fmt.Println(string(jsonConfig))
 }

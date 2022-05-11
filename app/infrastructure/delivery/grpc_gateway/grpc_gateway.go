@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"mime"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -71,7 +72,7 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 	}
 
 	// prepare OpenAPI handler
-	oa := getOpenAPIHandler()
+	oa := getOpenAPIHandler(log)
 
 	loggerMw := LogRequest(log)
 
@@ -108,12 +109,13 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 
 // getOpenAPIHandler serves an OpenAPI UI.
 // Adapted from https://github.com/philips/grpc-gateway-example/blob/a269bcb5931ca92be0ceae6130ac27ae89582ecc/cmd/serve.go#L63
-func getOpenAPIHandler() http.Handler {
+func getOpenAPIHandler(log logger.Logger) http.Handler {
 	_ = mime.AddExtensionType(".svg", "image/svg+xml")
 	// Use subdirectory in embedded files
 	subFS, err := fs.Sub(third_party.OpenAPI, "OpenAPI")
 	if err != nil {
-		panic("couldn't create sub filesystem: " + err.Error())
+		log.Errorf("couldn't create sub filesystem: %s", err)
+		os.Exit(-1)
 	}
 	return http.FileServer(http.FS(subFS))
 }
