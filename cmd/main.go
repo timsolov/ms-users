@@ -15,6 +15,7 @@ import (
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/infrastructure/logger"
 	"ms-users/app/infrastructure/repository/postgres"
+	"ms-users/app/usecase/create_user"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
@@ -56,6 +57,7 @@ func main() {
 	err = cli.Run(
 		ctx,
 		cli.NewMigrateCmd(log, d),
+		cli.NewCreateUserCmd(log, create_user.NewCreateUserCommand(d)),
 	)
 	if err != nil {
 		log.Errorf("cli: %v", err)
