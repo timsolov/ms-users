@@ -1,12 +1,13 @@
 package cli
 
 import (
+	"context"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-func Run(cmds ...*cobra.Command) error {
+func Run(ctx context.Context, cmds ...*cobra.Command) error {
 	rootCmd := &cobra.Command{Use: "app"}
 
 	// switch off usage message on run without args
@@ -22,5 +23,5 @@ func Run(cmds ...*cobra.Command) error {
 	// add commands
 	rootCmd.AddCommand(cmds...)
 
-	return rootCmd.Execute()
+	return rootCmd.ExecuteContext(ctx)
 }

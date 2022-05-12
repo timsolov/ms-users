@@ -52,8 +52,9 @@ func main() {
 		return
 	}
 
-	// migrate db if need
+	// cli commands
 	err = cli.Run(
+		ctx,
 		cli.NewMigrateCmd(log, d),
 	)
 	if err != nil {
