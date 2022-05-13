@@ -24,7 +24,7 @@ import (
 // }
 // ```
 func (s *Server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	if stErr := in.Validate(); stErr != nil {
+	if stErr := Validate(ctx, in); stErr != nil {
 		return &pb.CreateUserResponse{}, stErr
 	}
 

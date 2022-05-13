@@ -5,6 +5,7 @@ package users.v1;
 import "google/api/annotations.proto";
 // import "google/protobuf/field_mask.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
+import "tagger/tagger.proto";
 
 // Defines the import path that should be used to import the generated package,
 // and the package name.
@@ -69,10 +70,10 @@ service UserService {
 }
 
 message CreateUserRequest {
-  string email      = 1;
-  string password   = 2;
-  string first_name = 3;
-  string last_name  = 4;
+  string email      = 1 [(tagger.tags) = "validate:\"required,email\"" ];
+  string password   = 2 [(tagger.tags) = "validate:\"required,min:8,max:50\"" ];
+  string first_name = 3 [(tagger.tags) = "validate:\"required,min:3,max:20\"" ];
+  string last_name  = 4 [(tagger.tags) = "validate:\"required,min:3,max:20\"" ];
 }
 
 message CreateUserResponse {
