@@ -4,7 +4,7 @@ import (
 	"ms-users/app/domain/repository"
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/infrastructure/logger"
-	"ms-users/app/usecase/create_user"
+	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
 )
 
@@ -12,9 +12,9 @@ import (
 type Server struct {
 	log logger.Logger
 	// queries
-	profile profile.ProfileQuery
+	profile profile.UseCase
 	// commands
-	createUser create_user.CreateUserCommand
+	createUserPassIdentity create_emailpass_identity.UseCase
 }
 
 var _ pb.UserServiceServer = (*Server)(nil)
@@ -25,8 +25,8 @@ func New(log logger.Logger, repo repository.Repository) *Server {
 		// vars
 		log: log,
 		// queries
-		profile: profile.NewProfileQuery(repo),
+		profile: profile.New(repo),
 		// commands
-		createUser: create_user.NewCreateUserCommand(repo),
+		createUserPassIdentity: create_emailpass_identity.New(repo),
 	}
 }

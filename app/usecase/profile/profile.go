@@ -14,23 +14,23 @@ type Repository interface {
 	Profile(ctx context.Context, userID uuid.UUID) (entity.User, error)
 }
 
-// Profile describes parameters
-type Profile struct {
+// Params describes parameters
+type Params struct {
 	UserID uuid.UUID
 }
 
-// ProfileQuery describes dependencies
-type ProfileQuery struct {
+// UseCase describes dependencies
+type UseCase struct {
 	repo Repository
 }
 
-func NewProfileQuery(repo Repository) ProfileQuery {
-	return ProfileQuery{
+func New(repo Repository) UseCase {
+	return UseCase{
 		repo: repo,
 	}
 }
 
-func (uc ProfileQuery) Do(ctx context.Context, query *Profile) (user entity.User, err error) {
+func (uc UseCase) Run(ctx context.Context, query *Params) (user entity.User, err error) {
 	user, err = uc.repo.Profile(ctx, query.UserID)
 	if err != nil {
 		return user, err

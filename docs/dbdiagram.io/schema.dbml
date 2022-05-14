@@ -1,9 +1,24 @@
-Table users as U {
+Table users as u {
     user_id    UUID [pk]
-    email      varchar [not null, unique]
-    password   varchar [not null]
-    first_name varchar [not null]
-    last_name  varchar [not null]
-    created_at timestamptz [not null, note: 'when record created']
-    updated_at timestamptz [not null, note: 'when record updated']
+    view       varchar(20)    [not null] // the view name for profile
+    profile    jsonb          [not null, default: '{}']
+    version    int            [not null, default: 1] // optimistic update
+    created_at timestamptz    [not null, default: 'NOW()']
+    updated_at timestamptz    [not null, default: 'NOW()']
+}
+
+Table idents {
+    user_id    UUID           [not null, ref: > u.user_id]
+    ident      varchar(4096)  [not null]
+    ident_confirmed boolean   [not null, default: false]
+    kind       int            [not null, default: 1] // 1 - user:password
+    password   varchar(1024)
+    version    int            [not null, default: 1] // optimistic update
+    created_at timestamptz    [not null, default: 'NOW()']
+    updated_at timestamptz    [not null, default: 'NOW()']
+
+    indexes {
+        (ident, kind) [pk]
+        ident         [name: 'ident_idx']
+    }
 }
