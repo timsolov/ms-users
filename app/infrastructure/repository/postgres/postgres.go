@@ -2,12 +2,14 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"ms-users/app/infrastructure/logger"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 const _defaultReconnectTimeout = time.Second
@@ -15,6 +17,7 @@ const _defaultReconnectTimeout = time.Second
 // DB describes
 type DB struct {
 	db                         *sqlx.DB
+	tx                         *sqlx.Tx
 	reconnectTimeout           time.Duration
 	maxOpenConns, maxIdleConns int
 	openLifeTime, idleLifeTime time.Duration
@@ -146,4 +149,31 @@ func (d *DB) infof(format string, args ...interface{}) {
 		return
 	}
 	d.log.Infof(format, args...)
+}
+
+func (d *DB) atomic(ctx context.Context, fn func(tx *DB) error) error {
+	tx, err := d.db.BeginTxx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return errors.Wrap(err, "begin tx")
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	copyDB := *d
+	copyDB.tx = tx
+
+	err = fn(&copyDB)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrap(err, "commit tx")
+	}
+
+	return nil
 }

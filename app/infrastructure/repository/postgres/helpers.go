@@ -8,8 +8,16 @@ import (
 )
 
 func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interface{}) error {
-	r, err := d.db.ExecContext(ctx, d.db.Rebind(query), args...)
+	var (
+		r   sql.Result
+		err error
+	)
 
+	if d.tx != nil {
+		r, err = d.tx.ExecContext(ctx, d.db.Rebind(query), args...)
+	} else {
+		r, err = d.tx.ExecContext(ctx, d.db.Rebind(query), args...)
+	}
 	if err != nil {
 		return err
 	}
@@ -25,11 +33,4 @@ func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interf
 	}
 
 	return nil
-}
-
-func E(err error) error {
-	if err == sql.ErrNoRows {
-		return entity.ErrNotFound
-	}
-	return err
 }

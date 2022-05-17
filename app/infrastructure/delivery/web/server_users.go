@@ -5,7 +5,7 @@ import (
 
 	"ms-users/app/domain/entity"
 	"ms-users/app/infrastructure/delivery/web/pb"
-	"ms-users/app/usecase/create_user"
+	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
 
 	"github.com/pkg/errors"
@@ -23,23 +23,30 @@ import (
 //   "name": "value"
 // }
 // ```
-func (s *Server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmailPassIdentityRequest) (*pb.CreateEmailPassIdentityResponse, error) {
 	if stErr := Validate(ctx, in); stErr != nil {
-		return &pb.CreateUserResponse{}, stErr
+		return &pb.CreateEmailPassIdentityResponse{}, stErr
 	}
 
-	createUser := create_user.CreateUser{
+	createUser := create_emailpass_identity.Params{
 		Email:     in.GetEmail(),
 		FirstName: in.GetFirstName(),
 		LastName:  in.GetLastName(),
+		Password:  in.GetPassword(),
 	}
 
-	userID, err := s.createUser.Do(ctx, &createUser)
+	userID, err := s.createUserPassIdentity.Run(ctx, &createUser)
 	if err != nil {
-		return &pb.CreateUserResponse{}, Internal(ctx, s.log, "usecase createUser: %s", err)
+		switch errors.Cause(err) {
+		case entity.ErrNotUnique:
+			err = BadRequest(ctx, ErrIdentityDuplicated)
+		default:
+			err = Internal(ctx, s.log, "usecase createUserPassIdentity: %s", err)
+		}
+		return &pb.CreateEmailPassIdentityResponse{}, err
 	}
 
-	return &pb.CreateUserResponse{
+	return &pb.CreateEmailPassIdentityResponse{
 		UserId: userID.String(),
 	}, OK(ctx)
 }
@@ -53,20 +60,34 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 		return nil, Forbidden(ctx)
 	}
 
-	user, err := s.profile.Do(ctx, &profile.Profile{UserID: userID})
+	user, err := s.profile.Run(ctx, &profile.Params{UserID: userID})
 	if err != nil {
 		switch errors.Cause(err) {
 		case entity.ErrNotFound:
 			return &pb.ProfileResponse{}, Forbidden(ctx)
 		default:
-			return &pb.ProfileResponse{}, Internal(ctx, s.log, "usecase profile: %s", err)
+			return &pb.ProfileResponse{}, Internal(ctx, s.log, "usecase: %s", err)
 		}
+	}
+
+	var profile entity.V1Profile
+	err = user.UnmarshalProfile(&profile)
+	if err != nil {
+		return &pb.ProfileResponse{}, Internal(ctx, s.log, "unmarshaling profile: %s", err)
 	}
 
 	return &pb.ProfileResponse{
 		UserId:    user.UserID.String(),
-		Email:     user.Email,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
+		Email:     profile.Email,
+		FirstName: profile.FirstName,
+		LastName:  profile.LastName,
 	}, OK(ctx)
+}
+
+// Confirm universal confirm link
+//
+// It's possible to confirm different type of operations.
+//
+func (s *Server) Confirm(_ context.Context, _ *pb.ConfirmRequest) (*pb.ConfirmResponse, error) {
+	panic("not implemented") // TODO: Implement
 }

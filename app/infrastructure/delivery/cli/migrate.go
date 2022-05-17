@@ -15,9 +15,11 @@ type migrator interface {
 func NewMigrateCmd(log logger.Logger, r repository.Repository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "migrate <up|down|1|-1>",
-		Short: "migrate",
-		Long: "up - migrate all steps Up " +
-			"down - migrate all steps Down " +
+		Short: "Execute migration",
+		Long: "Execute migrations stored at binary\n" +
+			"Parameters:\n" +
+			"up - migrate all steps Up\n" +
+			"down - migrate all steps Down\n" +
 			"number - amount of steps to migrate (if > 0 - migrate number steps up, if < 0 migrate number steps down)",
 		Args: cobra.ExactArgs(1),
 		Run: func(_ *cobra.Command, args []string) {

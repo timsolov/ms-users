@@ -6,3 +6,12 @@
 - Graceful shutdown;
 - Accept interface, return struct pattern;
 - CQRS pattern for usecases;
+
+## Prometeus metrics
+
+http://0.0.0.0/metric/
+
+## TODO
+[ ] Healthcheck for all dependencies
+[ ] Opentelemetry
+[x] Prometheus

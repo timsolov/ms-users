@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -14,7 +15,7 @@ import (
 )
 
 var (
-	ErrAuthRequired = status.Error(http.StatusUnauthorized, "authorization required")
+	ErrIdentityDuplicated = errors.New("identity duplicated")
 )
 
 func Errorf(code codes.Code, format string, args ...interface{}) error {

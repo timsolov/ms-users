@@ -39,26 +39,36 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 };
 
 service UserService {
-  // Creates new user.
+
+  // Creates new profile with email-password identity.
   //
-  // For creating new user you have to provide:
-  // - email;
-  // - password;
-  // ```json
-  // {
-  //   "name": "value"
-  // }
-  // ```
-  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+  // For creating new profile you have to provide:
+  // - email (required);
+  // - password (required);
+  // - first_name (optional);
+  // - last_name (optional);
+  //
+  rpc CreateEmailPassIdentity(CreateEmailPassIdentityRequest) returns (CreateEmailPassIdentityResponse) {
     option (google.api.http) = {
-      post: "/v1/users"
+      post: "/v1/identities/email-pass"
       body: "*"
+    };
+  }
+
+  // Confirm universal confirm link
+  // 
+  // It's possible to confirm different type of operations.
+  //
+  rpc Confirm(ConfirmRequest) returns (ConfirmResponse) {
+    option (google.api.http) = {
+      get: "/v1/confirm/{code}"
     };
   }
 
   // Profile detail info.
   //
-  // Profile returns user detail info.
+  // Profile returns profile by profile_id.
+  //
   rpc Profile (ProfileRequest) returns (ProfileResponse) {
     option (google.api.http) = {
       get: "/v1/profile"
@@ -69,16 +79,22 @@ service UserService {
   }
 }
 
-message CreateUserRequest {
+message CreateEmailPassIdentityRequest {
   string email      = 1 [(tagger.tags) = "validate:\"required,email\"" ];
   string password   = 2 [(tagger.tags) = "validate:\"required,min:8,max:50\"" ];
-  string first_name = 3 [(tagger.tags) = "validate:\"required,min:3,max:20\"" ];
-  string last_name  = 4 [(tagger.tags) = "validate:\"required,min:3,max:20\"" ];
+  string first_name = 3 [(tagger.tags) = "validate:\"min:3,max:20\"" ];
+  string last_name  = 4 [(tagger.tags) = "validate:\"min:3,max:20\"" ];
 }
 
-message CreateUserResponse {
-  string user_id    = 1;
+message CreateEmailPassIdentityResponse {
+  string user_id = 1;
 }
+
+message ConfirmRequest {
+  string code = 1;
+}
+
+message ConfirmResponse {}
 
 message ProfileRequest {}
 
