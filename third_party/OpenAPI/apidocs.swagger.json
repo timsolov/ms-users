@@ -9,7 +9,7 @@
       "name": "UserService"
     }
   ],
-  "basePath": "/ms-users/api",
+  "basePath": "/ms-users",
   "schemes": [
     "http"
   ],
@@ -20,10 +20,44 @@
     "application/json"
   ],
   "paths": {
-    "/v1/confirm/{code}": {
+    "/v1/auth/email-pass": {
+      "post": {
+        "summary": "Authenticate users by email-pasword.",
+        "description": "Access: any",
+        "operationId": "UserService_AuthEmailPass",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AuthEmailPassResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AuthEmailPassRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/v1/identities/confirm/{code}": {
       "get": {
         "summary": "Confirm universal confirm link",
-        "description": "It's possible to confirm different type of operations.",
+        "description": "Access: any\n\nIt's possible to confirm different type of operations.",
         "operationId": "UserService_Confirm",
         "responses": {
           "200": {
@@ -55,7 +89,7 @@
     "/v1/identities/email-pass": {
       "post": {
         "summary": "Creates new profile with email-password identity.",
-        "description": "For creating new profile you have to provide:\n- email (required);\n- password (required);\n- first_name (optional);\n- last_name (optional);",
+        "description": "Access: any\n\nFor creating new profile you have to provide:\n- email (required);\n- password (required);\n- first_name (optional);\n- last_name (optional);",
         "operationId": "UserService_CreateEmailPassIdentity",
         "responses": {
           "200": {
@@ -89,7 +123,7 @@
     "/v1/profile": {
       "get": {
         "summary": "Profile detail info.",
-        "description": "Profile returns profile by profile_id.",
+        "description": "Access: X-User-Id\n\nProfile returns profile by profile_id.",
         "operationId": "UserService_Profile",
         "responses": {
           "200": {
@@ -141,6 +175,25 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1AuthEmailPassRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AuthEmailPassResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
         }
       }
     },

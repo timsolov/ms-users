@@ -39,3 +39,27 @@ func (d *DB) CreateIdent(ctx context.Context, m *entity.Ident) error {
 
 	return nil
 }
+
+// DeleteIdent deletes user by ident and kind.
+func (d *DB) DeleteIdent(ctx context.Context, ident string, kind entity.IdentKind) error {
+	query := `DELETE FROM "idents" WHERE ident = ? AND kind = ?`
+	return d.execr(ctx, 1, query, ident, kind)
+}
+
+// EmailPassIdentByEmail returns email-pass identity by email.
+func (d *DB) EmailPassIdentByEmail(ctx context.Context, email string) (ident entity.Ident, err error) {
+	r, err := d.one(ctx,
+		`SELECT user_id, ident, ident_confirmed, kind, password, created_at, updated_at
+			FROM "idents" WHERE ident = ?`,
+		email)
+	if err != nil {
+		return
+	}
+
+	var passoword sql.NullString
+
+	err = E(r.Scan(&ident.UserID, &ident.Ident, &ident.IdentConfirmed, &ident.Kind, &passoword, &ident.CreatedAt, &ident.UpdatedAt))
+	ident.Password = passoword.String
+
+	return
+}

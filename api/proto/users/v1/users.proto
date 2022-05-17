@@ -17,7 +17,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     version: "1.0"
   }
   schemes: HTTP
-  base_path: "/ms-users/api"
+  base_path: "/ms-users"
   consumes: "application/json"
   produces: "application/json"
   security_definitions: {
@@ -42,6 +42,8 @@ service UserService {
 
   // Creates new profile with email-password identity.
   //
+  // Access: any
+  //
   // For creating new profile you have to provide:
   // - email (required);
   // - password (required);
@@ -55,17 +57,32 @@ service UserService {
     };
   }
 
+  // Authenticate users by email-pasword.
+  //
+  // Access: any
+  //
+  rpc AuthEmailPass(AuthEmailPassRequest) returns (AuthEmailPassResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/email-pass"
+      body: "*"
+    };
+  }
+
   // Confirm universal confirm link
-  // 
+  //
+  // Access: any
+  //
   // It's possible to confirm different type of operations.
   //
   rpc Confirm(ConfirmRequest) returns (ConfirmResponse) {
     option (google.api.http) = {
-      get: "/v1/confirm/{code}"
+      get: "/v1/identities/confirm/{code}"
     };
   }
 
   // Profile detail info.
+  //
+  // Access: X-User-Id
   //
   // Profile returns profile by profile_id.
   //
@@ -79,22 +96,39 @@ service UserService {
   }
 }
 
+// CreateEmailPassIdentity
+
 message CreateEmailPassIdentityRequest {
   string email      = 1 [(tagger.tags) = "validate:\"required,email\"" ];
-  string password   = 2 [(tagger.tags) = "validate:\"required,min:8,max:50\"" ];
-  string first_name = 3 [(tagger.tags) = "validate:\"min:3,max:20\"" ];
-  string last_name  = 4 [(tagger.tags) = "validate:\"min:3,max:20\"" ];
+  string password   = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\"" ];
+  string first_name = 3 [(tagger.tags) = "validate:\"min=3,max=20\"" ];
+  string last_name  = 4 [(tagger.tags) = "validate:\"min=3,max=20\"" ];
 }
 
 message CreateEmailPassIdentityResponse {
   string user_id = 1;
 }
 
+// AuthEmailPass
+
+message AuthEmailPassRequest {
+  string email      = 1 [(tagger.tags) = "validate:\"required,email\"" ];
+  string password   = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\"" ];
+}
+
+message AuthEmailPassResponse {
+  string access_token = 1;
+}
+
+// Confirm
+
 message ConfirmRequest {
   string code = 1;
 }
 
 message ConfirmResponse {}
+
+// Profile
 
 message ProfileRequest {}
 

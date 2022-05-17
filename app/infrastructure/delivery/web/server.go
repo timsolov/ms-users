@@ -1,9 +1,11 @@
 package web
 
 import (
+	"ms-users/app/conf"
 	"ms-users/app/domain/repository"
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/infrastructure/logger"
+	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
 )
@@ -14,19 +16,21 @@ type Server struct {
 	// queries
 	profile profile.UseCase
 	// commands
-	createUserPassIdentity create_emailpass_identity.UseCase
+	createEmailPassIdentity create_emailpass_identity.UseCase
+	authEmailPass           auth_emailpass.UseCase
 }
 
 var _ pb.UserServiceServer = (*Server)(nil)
 
 // New initializes a new Server struct.
-func New(log logger.Logger, repo repository.Repository) *Server {
+func New(log logger.Logger, repo repository.Repository, config *conf.Config) *Server {
 	return &Server{
 		// vars
 		log: log,
 		// queries
 		profile: profile.New(repo),
 		// commands
-		createUserPassIdentity: create_emailpass_identity.New(repo),
+		createEmailPassIdentity: create_emailpass_identity.New(repo),
+		authEmailPass:           auth_emailpass.New(repo, &config.TOKEN),
 	}
 }

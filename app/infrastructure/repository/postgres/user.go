@@ -38,6 +38,12 @@ func (d *DB) CreateUser(ctx context.Context, m *entity.User) error {
 	return nil
 }
 
+// DeleteUser deletes user by id.
+func (d *DB) DeleteUser(ctx context.Context, userID uuid.UUID) error {
+	query := "DELETE FROM users WHERE user_id = ?"
+	return d.execr(ctx, 1, query, userID)
+}
+
 // Profile returns profile record
 func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error) {
 	var user entity.User

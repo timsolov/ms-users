@@ -8,4 +8,6 @@ var (
 	ErrForbidden = errors.New("forbidden")
 	ErrNotUnique = errors.New("not unique")
 	ErrMismatch  = errors.New("mismatch")
+
+	ErrUnauthorized = errors.New("unauthorized")
 )

@@ -8,7 +8,7 @@ Table users as u {
 }
 
 Table idents {
-    user_id    UUID           [not null, ref: > u.user_id]
+    user_id    UUID           [not null]
     ident      varchar(4096)  [not null]
     ident_confirmed boolean   [not null, default: false]
     kind       int            [not null, default: 1] // 1 - user:password
@@ -22,3 +22,5 @@ Table idents {
         ident         [name: 'ident_idx']
     }
 }
+
+Ref: idents.user_id > u.user_id [delete: cascade]
