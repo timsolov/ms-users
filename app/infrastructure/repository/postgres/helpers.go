@@ -16,7 +16,7 @@ func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interf
 	if d.tx != nil {
 		r, err = d.tx.ExecContext(ctx, d.db.Rebind(query), args...)
 	} else {
-		r, err = d.tx.ExecContext(ctx, d.db.Rebind(query), args...)
+		r, err = d.db.ExecContext(ctx, d.db.Rebind(query), args...)
 	}
 	if err != nil {
 		return err

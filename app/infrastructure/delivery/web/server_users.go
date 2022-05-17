@@ -70,17 +70,17 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 		}
 	}
 
-	var profile entity.V1Profile
-	err = user.UnmarshalProfile(&profile)
+	var profileView entity.V1Profile
+	err = user.UnmarshalProfile(&profileView)
 	if err != nil {
 		return &pb.ProfileResponse{}, Internal(ctx, s.log, "unmarshaling profile: %s", err)
 	}
 
 	return &pb.ProfileResponse{
 		UserId:    user.UserID.String(),
-		Email:     profile.Email,
-		FirstName: profile.FirstName,
-		LastName:  profile.LastName,
+		Email:     profileView.Email,
+		FirstName: profileView.FirstName,
+		LastName:  profileView.LastName,
 	}, OK(ctx)
 }
 

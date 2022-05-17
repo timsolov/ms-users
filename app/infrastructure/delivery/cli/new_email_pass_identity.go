@@ -9,17 +9,24 @@ import (
 )
 
 func NewCreateEmailPassIdentityCmd(log logger.Logger, uc create_emailpass_identity.UseCase) *cobra.Command {
+	const (
+		exactArgs    = 4
+		emailIdx     = 0
+		passIdx      = 1
+		firstNameIdx = 2
+		lastNameIdx  = 3
+	)
 	return &cobra.Command{
 		Use:   "create-email-pass-identity <email> <password> <firstname> <lastname>",
 		Short: "Create user and email-pass identity for him",
-		Args:  cobra.ExactArgs(4),
+		Args:  cobra.ExactArgs(exactArgs),
 		Run: func(cmd *cobra.Command, args []string) {
 			userID, err := uc.Run(cmd.Context(), &create_emailpass_identity.Params{
-				Email:          args[0],
+				Email:          args[emailIdx],
 				EmailConfirmed: true,
-				Password:       args[1],
-				FirstName:      args[2],
-				LastName:       args[3],
+				Password:       args[passIdx],
+				FirstName:      args[firstNameIdx],
+				LastName:       args[lastNameIdx],
 			})
 			if err != nil {
 				log.Fatalf("create-email-pass-identity error: %v", err)

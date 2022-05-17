@@ -26,6 +26,7 @@ gen:
 .PHONY: lint
 lint:
 	buf lint api/proto
+	golangci-lint run ./...
 
 .PHONY: tools
 tools:
