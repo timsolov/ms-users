@@ -51,11 +51,11 @@ func (uc *UseCase) Do(ctx context.Context, cmd *Params) (accessToken, refreshTok
 	now := time.Now()
 	jsonToken := paseto.JSONToken{
 		Issuer:     uc.tokenConfig.Issuer,
-		Subject:    ident.UserID.String(),
 		IssuedAt:   now,
 		Expiration: now.Add(uc.tokenConfig.AccessLife),
 		NotBefore:  now,
 	}
+	jsonToken.Set("user_id", ident.UserID.String())
 
 	accessToken, err = paseto.NewV2().Encrypt([]byte(uc.tokenConfig.Secret), jsonToken, nil)
 	if err != nil {

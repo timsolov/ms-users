@@ -8,7 +8,9 @@ import (
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
+	"ms-users/app/usecase/whoami"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -51,14 +53,14 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 
 	userID, err := XUserId(ctx)
 	if err != nil {
-		return nil, Forbidden(ctx)
+		return nil, Unauthorized(ctx)
 	}
 
 	user, err := s.profile.Run(ctx, &profile.Params{UserID: userID})
 	if err != nil {
 		switch errors.Cause(err) {
 		case entity.ErrNotFound:
-			return out, Forbidden(ctx)
+			return out, Unauthorized(ctx)
 		default:
 			return out, Internal(ctx, s.log, "usecase: %s", err)
 		}
@@ -102,6 +104,48 @@ func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest)
 	}
 
 	out.AccessToken = accessToken
+
+	return out, OK(ctx)
+}
+
+// Whoami returns user_id by access_token.
+//
+// This end-point considers you have an access_token in Cookie or Authorization header.
+// It's possible to use it in authentication middleware for authenticate users.
+//
+func (s *Server) Whoami(ctx context.Context, _ *pb.WhoamiRequest) (*pb.WhoamiResponse, error) {
+	out := &pb.WhoamiResponse{}
+
+	var (
+		accessToken string
+		userID      uuid.UUID
+	)
+
+	// first we check cookie for access_token
+	accessToken, err := Cookie(ctx, "access_token")
+	if err != nil && err != entity.ErrNotFound {
+		return out, Unauthorized(ctx, err)
+	}
+	if accessToken != "" {
+		goto usecase
+	}
+
+	// second we look at the bearer token
+	accessToken, err = Bearer(ctx)
+	if err != nil && err != entity.ErrNotFound {
+		return out, Unauthorized(ctx, err)
+	}
+	if accessToken == "" {
+		return out, Unauthorized(ctx, err)
+	}
+
+usecase:
+	userID, err = s.whoami.Do(ctx, &whoami.Params{AccessToken: accessToken})
+	if err != nil {
+		return out, Unauthorized(ctx, err)
+	}
+
+	out.UserId = userID.String()
 
 	return out, OK(ctx)
 }

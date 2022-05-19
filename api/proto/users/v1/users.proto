@@ -3,6 +3,7 @@ syntax="proto3";
 package users.v1;
 
 import "google/api/annotations.proto";
+import "google/rpc/status.proto";
 // import "google/protobuf/field_mask.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "tagger/tagger.proto";
@@ -27,15 +28,35 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
         type: TYPE_API_KEY
         in: IN_HEADER
         name: "X-User-Id"
-        description: "Authentication token, prefixed by Bearer word: Bearer <token>"
+        description: "Header X-User-Id with user_id in value. Available only in internal network. Example: `X-User-Id: 65da4e43-81b2-42e4-9669-a5b4bb54716e`."
+      }
+    }
+    security: {
+      key: "Bearer"
+      value: {
+          type: TYPE_API_KEY
+          in: IN_HEADER
+          name: "Authorization"
+          description: "Authentication token, prefixed by Bearer. Example: `Authentication: Bearer <token>`."
+      }
+    }
+    security: {
+      key: "Cookie"
+      value: {
+          type: TYPE_API_KEY
+          in: IN_HEADER
+          name: "Cookie"
+          description: "Authentication token in cookie field access_token. Example: `Cookie: access_token=<token>`"
       }
     }
   }
-  // security: {
-  //   security_requirement: {
-  //     key: "X-User-Id"
-  //   }
-  // }
+  responses: {
+    key: "400"
+    value: { 
+      description: "Validation error"
+      schema: { json_schema: { ref: ".google.rpc.Status" }}
+    }
+  }
 };
 
 service UserService {
@@ -94,7 +115,33 @@ service UserService {
       security: {security_requirement: {key: "X-User-Id"}}
     };
   }
+
+  // Whoami returns user_id by access_token.
+  //
+  // This end-point considers you have an access_token in Cookie or Authorization header.
+  // It's possible to use it in authentication middleware for authenticate users.
+  //
+  rpc Whoami (WhoamiRequest) returns (WhoamiResponse) {
+    option (google.api.http) = {
+      post: "/v1/whoami"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: {
+        security_requirement: {key: "Bearer"}
+        security_requirement: {key: "Cookie"}
+      }
+      responses: {
+        key: "401"
+        value: { 
+          description: "Unauthorized request"
+          schema: { json_schema: { ref: ".users.v1.Empty" }}
+        }
+      }
+    };
+  }
 }
+
+message Empty {}
 
 // CreateEmailPassIdentity
 
@@ -137,4 +184,11 @@ message ProfileResponse {
   string email      = 2;
   string first_name = 3;
   string last_name  = 4;
+}
+
+// Whoami
+
+message WhoamiRequest {}
+message WhoamiResponse {
+  string user_id = 1;
 }
