@@ -49,6 +49,8 @@ func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interf
 // 	return r, E(err)
 // }
 
+// one makes sql query and returns one row from db.
+// It do E(err).
 func (d *DB) one(ctx context.Context, query string, args ...interface{}) (*sql.Row, error) {
 	var (
 		r *sql.Row
