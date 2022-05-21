@@ -29,7 +29,7 @@ func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmail
 		Password:  in.GetPassword(),
 	}
 
-	userID, err := s.createEmailPassIdentity.Run(ctx, &createUser)
+	userID, err := s.commands.CreateEmailPassIdentity.Run(ctx, &createUser)
 	if err != nil {
 		switch errors.Cause(err) {
 		case entity.ErrNotUnique:
@@ -56,7 +56,7 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 		return nil, Unauthorized(ctx)
 	}
 
-	user, err := s.profile.Run(ctx, &profile.Params{UserID: userID})
+	user, err := s.queries.Profile.Run(ctx, &profile.Params{UserID: userID})
 	if err != nil {
 		switch errors.Cause(err) {
 		case entity.ErrNotFound:
@@ -95,7 +95,7 @@ func (s *Server) Confirm(_ context.Context, _ *pb.ConfirmRequest) (*pb.ConfirmRe
 func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest) (*pb.AuthEmailPassResponse, error) {
 	out := &pb.AuthEmailPassResponse{}
 
-	accessToken, _, err := s.authEmailPass.Do(ctx, &auth_emailpass.Params{
+	accessToken, _, err := s.commands.AuthEmailPass.Do(ctx, &auth_emailpass.Params{
 		Email:    in.GetEmail(),
 		Password: in.GetPassword(),
 	})
@@ -140,7 +140,7 @@ func (s *Server) Whoami(ctx context.Context, _ *pb.WhoamiRequest) (*pb.WhoamiRes
 	}
 
 usecase:
-	userID, err = s.whoami.Do(ctx, &whoami.Params{AccessToken: accessToken})
+	userID, err = s.queries.Whoami.Do(ctx, &whoami.Params{AccessToken: accessToken})
 	if err != nil {
 		return out, Unauthorized(ctx, err)
 	}

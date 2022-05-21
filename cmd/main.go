@@ -15,7 +15,10 @@ import (
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/infrastructure/logger"
 	"ms-users/app/infrastructure/repository/postgres"
+	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/create_emailpass_identity"
+	"ms-users/app/usecase/profile"
+	"ms-users/app/usecase/whoami"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
@@ -64,15 +67,29 @@ func main() {
 		return
 	}
 
+	// prepare web/gRPC server handlers
+	webServer := web.New(log,
+		&web.Queries{
+			Profile: profile.New(d),
+			Whoami:  whoami.New(d, &cfg.TOKEN),
+		},
+		&web.Commands{
+			CreateEmailPassIdentity: create_emailpass_identity.New(d),
+			AuthEmailPass:           auth_emailpass.New(d, &cfg.TOKEN),
+		},
+	)
+
+	// run gRPC server
 	grpcErr := grpc_server.Run(
 		ctx,
 		log,
 		cfg.GRPC.Addr(), // listen incoming host:port for gRPC server
 		func(s grpc.ServiceRegistrar) {
-			pb.RegisterUserServiceServer(s, web.New(log, d, &cfg))
+			pb.RegisterUserServiceServer(s, webServer)
 		},
 	)
 
+	// run web -> gRPC gateway
 	grpcGwErr := grpc_gateway.Run(
 		ctx,
 		log,
@@ -83,9 +100,8 @@ func main() {
 		},
 	)
 
-	log.Infof("application started")
+	log.Infof("application started (version: %s buildtime: %s)", conf.Version, conf.Buildtime)
 	defer log.Infof("application finished")
-	log.Infof("version: %s buildtime: %s", conf.Version, conf.Buildtime)
 
 	select {
 	case <-ctx.Done():
