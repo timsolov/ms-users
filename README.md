@@ -14,5 +14,7 @@ http://0.0.0.0/metric/
 
 ## TODO
 [ ] Healthcheck for all dependencies
+    [ ] PostgreSQL
+    [ ] NATS
 [ ] Opentelemetry
 [x] Prometheus
