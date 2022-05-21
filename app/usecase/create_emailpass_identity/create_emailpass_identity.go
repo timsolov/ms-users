@@ -2,8 +2,7 @@ package create_emailpass_identity
 
 import (
 	"context"
-
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -13,7 +12,7 @@ import (
 // Repository describes repository contract
 type Repository interface {
 	// CreateUserAggregate creates new ident record with user record.
-	CreateUserAggregate(ctx context.Context, ua *entity.UserAggregate) error
+	CreateUserAggregate(ctx context.Context, ua *domain.UserAggregate) error
 }
 
 // Params describes parameters
@@ -42,29 +41,29 @@ func (uc UseCase) Run(ctx context.Context, cmd *Params) (profileID uuid.UUID, er
 		return uuid.Nil, errors.Wrap(err, "encrypting password by bcrypt")
 	}
 
-	profile := entity.V1Profile{
+	profile := domain.V1Profile{
 		Email:     cmd.Email,
 		FirstName: cmd.FirstName,
 		LastName:  cmd.LastName,
 	}
 
-	user := entity.User{
+	user := domain.User{
 		UserID: uuid.New(),
 		View:   "v1",
 	}
 	_ = user.MarshalProfile(profile)
 
-	ident := entity.Ident{
+	ident := domain.Ident{
 		UserID:         user.UserID,
 		Ident:          cmd.Email,
 		IdentConfirmed: cmd.EmailConfirmed,
-		Kind:           entity.EmailPassIdent,
+		Kind:           domain.EmailPassIdent,
 		Password:       encryptedPass,
 	}
 
-	ua := entity.UserAggregate{
+	ua := domain.UserAggregate{
 		User:   user,
-		Idents: []entity.Ident{ident},
+		Idents: []domain.Ident{ident},
 	}
 
 	err = uc.repo.CreateUserAggregate(ctx, &ua)

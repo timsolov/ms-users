@@ -4,9 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"ms-users/app/domain"
 	"time"
-
-	"ms-users/app/domain/entity"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -41,7 +40,7 @@ func (r *Redis) TTL(ctx context.Context, key string) (time.Duration, error) {
 		return -1, err
 	}
 	if ttl < 0 {
-		return -1, entity.ErrNotFound
+		return -1, domain.ErrNotFound
 	}
 
 	return ttl, nil
@@ -53,7 +52,7 @@ func (r *Redis) Get(ctx context.Context, key string, value interface{}) error {
 	s, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			return entity.ErrNotFound
+			return domain.ErrNotFound
 		}
 		return err
 	}

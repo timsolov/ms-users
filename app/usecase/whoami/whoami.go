@@ -3,7 +3,7 @@ package whoami
 import (
 	"context"
 	"ms-users/app/conf"
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 
 	"github.com/google/uuid"
 	"github.com/o1egl/paseto"
@@ -13,7 +13,7 @@ import (
 // Repository describes repository contract
 type Repository interface {
 	// EmailPassIdentByEmail returns email-pass identity by email.
-	EmailPassIdentByEmail(ctx context.Context, email string) (ident entity.Ident, err error)
+	EmailPassIdentByEmail(ctx context.Context, email string) (ident domain.Ident, err error)
 }
 
 // Params describes parameters

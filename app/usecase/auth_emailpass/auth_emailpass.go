@@ -3,7 +3,7 @@ package auth_emailpass
 import (
 	"context"
 	"ms-users/app/conf"
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 	"time"
 
 	"github.com/o1egl/paseto"
@@ -14,7 +14,7 @@ import (
 // Repository describes repository contract
 type Repository interface {
 	// EmailPassIdentByEmail returns email-pass identity by email.
-	EmailPassIdentByEmail(ctx context.Context, email string) (ident entity.Ident, err error)
+	EmailPassIdentByEmail(ctx context.Context, email string) (ident domain.Ident, err error)
 }
 
 // Params describes parameters
@@ -44,7 +44,7 @@ func (uc *UseCase) Do(ctx context.Context, cmd *Params) (accessToken, refreshTok
 	}
 
 	if !comparePassword(ident.Password, cmd.Password) {
-		err = entity.ErrUnauthorized
+		err = domain.ErrUnauthorized
 		return
 	}
 

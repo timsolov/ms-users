@@ -4,15 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"ms-users/app/domain"
 	"time"
-
-	"ms-users/app/domain/entity"
 
 	"github.com/google/uuid"
 )
 
 // CreateIdent creates new ident record
-func (d *DB) CreateIdent(ctx context.Context, m *entity.Ident) error {
+func (d *DB) CreateIdent(ctx context.Context, m *domain.Ident) error {
 	if m.UserID == uuid.Nil {
 		return fmt.Errorf("user_id: required")
 	}
@@ -41,13 +40,13 @@ func (d *DB) CreateIdent(ctx context.Context, m *entity.Ident) error {
 }
 
 // DeleteIdent deletes user by ident and kind.
-func (d *DB) DeleteIdent(ctx context.Context, ident string, kind entity.IdentKind) error {
+func (d *DB) DeleteIdent(ctx context.Context, ident string, kind domain.IdentKind) error {
 	query := `DELETE FROM "idents" WHERE ident = ? AND kind = ?`
 	return d.execr(ctx, 1, query, ident, kind)
 }
 
 // EmailPassIdentByEmail returns email-pass identity by email.
-func (d *DB) EmailPassIdentByEmail(ctx context.Context, email string) (ident entity.Ident, err error) {
+func (d *DB) EmailPassIdentByEmail(ctx context.Context, email string) (ident domain.Ident, err error) {
 	r, err := d.one(ctx,
 		`SELECT user_id, ident, ident_confirmed, kind, password, created_at, updated_at
 			FROM "idents" WHERE ident = ?`,

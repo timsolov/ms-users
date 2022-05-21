@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"database/sql"
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -13,10 +13,10 @@ import (
 // Other errors will be returned without replacing. (gorm.ErrRecordNotFound -> db.ErrNotFound, other error -> other error)
 func E(err error) error {
 	if errors.Is(err, sql.ErrNoRows) {
-		return entity.ErrNotFound
+		return domain.ErrNotFound
 	}
 	if IsUniqueViolationErr(err) {
-		return entity.ErrNotUnique
+		return domain.ErrNotUnique
 	}
 	return err
 }

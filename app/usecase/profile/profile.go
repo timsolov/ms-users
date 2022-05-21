@@ -2,8 +2,7 @@ package profile
 
 import (
 	"context"
-
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 
 	"github.com/google/uuid"
 )
@@ -11,7 +10,7 @@ import (
 // Repository describes repository contract
 type Repository interface {
 	// Profile returns user record
-	Profile(ctx context.Context, userID uuid.UUID) (entity.User, error)
+	Profile(ctx context.Context, userID uuid.UUID) (domain.User, error)
 }
 
 // Params describes parameters
@@ -30,7 +29,7 @@ func New(repo Repository) UseCase {
 	}
 }
 
-func (uc UseCase) Run(ctx context.Context, query *Params) (user entity.User, err error) {
+func (uc UseCase) Run(ctx context.Context, query *Params) (user domain.User, err error) {
 	user, err = uc.repo.Profile(ctx, query.UserID)
 	if err != nil {
 		return user, err

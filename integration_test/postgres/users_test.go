@@ -3,7 +3,7 @@ package postgres_test
 import (
 	"context"
 	"encoding/json"
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 	"ms-users/app/infrastructure/repository/postgres"
 	"testing"
 
@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func NewUser(t *testing.T, ctx context.Context, d *postgres.DB) (user entity.User, clean func()) {
-	p := entity.V1Profile{
+func NewUser(t *testing.T, ctx context.Context, d *postgres.DB) (user domain.User, clean func()) {
+	p := domain.V1Profile{
 		Email:     randomdata.Email(),
 		FirstName: randomdata.FirstName(randomdata.Male),
 		LastName:  randomdata.LastName(),
@@ -22,7 +22,7 @@ func NewUser(t *testing.T, ctx context.Context, d *postgres.DB) (user entity.Use
 	b, err := json.Marshal(p)
 	assert.NoError(t, err)
 
-	user = entity.User{
+	user = domain.User{
 		UserID:  uuid.New(),
 		View:    "v1",
 		Profile: b,

@@ -3,8 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
-
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 )
 
 func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interface{}) error { //nolint: unparam
@@ -28,7 +27,7 @@ func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interf
 			return E(err)
 		}
 		if i != rows {
-			return entity.ErrMismatch
+			return domain.ErrMismatch
 		}
 	}
 

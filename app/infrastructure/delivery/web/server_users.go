@@ -3,7 +3,7 @@ package web
 import (
 	"context"
 
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/create_emailpass_identity"
@@ -32,7 +32,7 @@ func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmail
 	userID, err := s.commands.CreateEmailPassIdentity.Run(ctx, &createUser)
 	if err != nil {
 		switch errors.Cause(err) {
-		case entity.ErrNotUnique:
+		case domain.ErrNotUnique:
 			err = BadRequest(ctx, ErrIdentityDuplicated)
 		default:
 			err = Internal(ctx, s.log, "usecase createUserPassIdentity: %s", err)
@@ -59,14 +59,14 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 	user, err := s.queries.Profile.Run(ctx, &profile.Params{UserID: userID})
 	if err != nil {
 		switch errors.Cause(err) {
-		case entity.ErrNotFound:
+		case domain.ErrNotFound:
 			return out, Unauthorized(ctx)
 		default:
 			return out, Internal(ctx, s.log, "usecase: %s", err)
 		}
 	}
 
-	var profileView entity.V1Profile
+	var profileView domain.V1Profile
 	err = user.UnmarshalProfile(&profileView)
 	if err != nil {
 		return out, Internal(ctx, s.log, "unmarshaling profile: %s", err)
@@ -123,7 +123,7 @@ func (s *Server) Whoami(ctx context.Context, _ *pb.WhoamiRequest) (*pb.WhoamiRes
 
 	// first we check cookie for access_token
 	accessToken, err := Cookie(ctx, "access_token")
-	if err != nil && err != entity.ErrNotFound {
+	if err != nil && err != domain.ErrNotFound {
 		return out, Unauthorized(ctx, err)
 	}
 	if accessToken != "" {
@@ -132,7 +132,7 @@ func (s *Server) Whoami(ctx context.Context, _ *pb.WhoamiRequest) (*pb.WhoamiRes
 
 	// second we look at the bearer token
 	accessToken, err = Bearer(ctx)
-	if err != nil && err != entity.ErrNotFound {
+	if err != nil && err != domain.ErrNotFound {
 		return out, Unauthorized(ctx, err)
 	}
 	if accessToken == "" {

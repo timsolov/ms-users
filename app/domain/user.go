@@ -1,4 +1,4 @@
-package entity
+package domain
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// User describes entity.
+// User describes domain.
 type User struct {
 	UserID    uuid.UUID
 	View      string

@@ -3,7 +3,7 @@ package postgres_test
 import (
 	"context"
 	"ms-users/app/conf"
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 	"ms-users/app/infrastructure/repository/postgres"
 	"testing"
 	"time"
@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func NewIdent(t *testing.T, ctx context.Context, d *postgres.DB, userID uuid.UUID, kind entity.IdentKind) (ident entity.Ident, clean func()) {
-	ident = entity.Ident{
+func NewIdent(t *testing.T, ctx context.Context, d *postgres.DB, userID uuid.UUID, kind domain.IdentKind) (ident domain.Ident, clean func()) {
+	ident = domain.Ident{
 		UserID:         userID,
 		Kind:           kind,
 		IdentConfirmed: true,
@@ -23,7 +23,7 @@ func NewIdent(t *testing.T, ctx context.Context, d *postgres.DB, userID uuid.UUI
 	}
 
 	switch kind {
-	case entity.EmailPassIdent:
+	case domain.EmailPassIdent:
 		ident.Ident = randomdata.Email()
 	default:
 		t.Fatalf("unknown kind: %v", kind)
@@ -48,7 +48,7 @@ func TestDB_EmailPassIdentByEmail(t *testing.T) {
 	user, clean := NewUser(t, ctx, d)
 	defer clean()
 
-	ident, clean := NewIdent(t, ctx, d, user.UserID, entity.EmailPassIdent)
+	ident, clean := NewIdent(t, ctx, d, user.UserID, domain.EmailPassIdent)
 	defer clean()
 
 	type args struct {

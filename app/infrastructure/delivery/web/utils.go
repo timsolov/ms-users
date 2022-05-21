@@ -2,7 +2,7 @@ package web
 
 import (
 	"context"
-	"ms-users/app/domain/entity"
+	"ms-users/app/domain"
 	"net/http"
 	"strings"
 
@@ -17,16 +17,16 @@ func XUserId(ctx context.Context) (userID uuid.UUID, err error) {
 			return uuid.Parse(uID[0])
 		}
 	}
-	err = entity.ErrNotFound
+	err = domain.ErrNotFound
 	return
 }
 
 // Cookie returns value of cookie with name `name`.
-// Returns entity.ErrNotFound when cookie is absent.
+// Returns domain.ErrNotFound when cookie is absent.
 func Cookie(ctx context.Context, name string) (value string, err error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		err = entity.ErrNotFound
+		err = domain.ErrNotFound
 		return
 	}
 	const cookie = "cookie"
@@ -42,7 +42,7 @@ func Cookie(ctx context.Context, name string) (value string, err error) {
 		c, err = request.Cookie(name)
 		if err != nil {
 			if err == http.ErrNoCookie {
-				err = entity.ErrNotFound
+				err = domain.ErrNotFound
 			}
 			return
 		}
@@ -51,25 +51,25 @@ func Cookie(ctx context.Context, name string) (value string, err error) {
 		return
 	}
 
-	err = entity.ErrNotFound
+	err = domain.ErrNotFound
 	return
 }
 
 // Bearer extracts bearer token from Authorization header.
-// Returns entity.ErrNotFound when token is absent.
+// Returns domain.ErrNotFound when token is absent.
 func Bearer(ctx context.Context) (value string, err error) {
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		if authorization, ok := md["authorization"]; ok && len(authorization) > 0 {
 			const partsAmount = 2
 			parts := strings.SplitN(authorization[0], " ", partsAmount)
 			if len(parts) != partsAmount {
-				err = entity.ErrNotFound
+				err = domain.ErrNotFound
 				return
 			}
 			value = strings.TrimSuffix(parts[1], ";")
 			return
 		}
 	}
-	err = entity.ErrNotFound
+	err = domain.ErrNotFound
 	return
 }

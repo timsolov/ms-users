@@ -2,16 +2,15 @@ package postgres
 
 import (
 	"context"
+	"ms-users/app/domain"
 	"time"
-
-	"ms-users/app/domain/entity"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 // CreateUser creates new profile record
-func (d *DB) CreateUser(ctx context.Context, m *entity.User) error {
+func (d *DB) CreateUser(ctx context.Context, m *domain.User) error {
 	if m.UserID == uuid.Nil {
 		m.UserID = uuid.New()
 	}
@@ -45,8 +44,8 @@ func (d *DB) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 }
 
 // Profile returns profile record
-func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error) {
-	var user entity.User
+func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (domain.User, error) {
+	var user domain.User
 
 	query := "SELECT user_id, view, profile, created_at, updated_at FROM users WHERE user_id = ?"
 
@@ -68,11 +67,11 @@ func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (entity.User, error)
 		return user, E(err)
 	}
 
-	return user, entity.ErrNotFound
+	return user, domain.ErrNotFound
 }
 
 // CreateUserAggregate creates new ident record with user record.
-func (d *DB) CreateUserAggregate(ctx context.Context, ua *entity.UserAggregate) error {
+func (d *DB) CreateUserAggregate(ctx context.Context, ua *domain.UserAggregate) error {
 	err := d.atomic(ctx, func(tx *DB) error {
 		err := tx.CreateUser(ctx, &ua.User)
 		if err != nil {
