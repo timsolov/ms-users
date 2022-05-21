@@ -16,6 +16,7 @@ import (
 
 var (
 	ErrIdentityDuplicated = errors.New("identity duplicated")
+	ErrTokenNotFound      = errors.New("token not found")
 )
 
 func Errorf(code codes.Code, format string, args ...interface{}) error {
@@ -26,8 +27,20 @@ func BadRequest(ctx context.Context, err error) error {
 	return Custom(ctx, codes.InvalidArgument, http.StatusBadRequest, err)
 }
 
-func Forbidden(ctx context.Context) error {
-	return Custom(ctx, codes.PermissionDenied, http.StatusForbidden, nil)
+func Forbidden(ctx context.Context, err ...error) error {
+	var e error
+	if len(err) == 1 {
+		e = err[0]
+	}
+	return Custom(ctx, codes.PermissionDenied, http.StatusForbidden, e)
+}
+
+func Unauthorized(ctx context.Context, err ...error) error {
+	var e error
+	if len(err) == 1 {
+		e = err[0]
+	}
+	return Custom(ctx, codes.PermissionDenied, http.StatusUnauthorized, e)
 }
 
 func Internal(ctx context.Context, log logger.Logger, format string, args ...interface{}) error {

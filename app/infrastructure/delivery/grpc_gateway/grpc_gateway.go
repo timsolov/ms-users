@@ -143,7 +143,7 @@ func httpResponseModifier(ctx context.Context, w http.ResponseWriter, p proto.Me
 
 func headerMatcher(key string) (string, bool) {
 	switch key {
-	case "X-User-Id":
+	case "X-User-Id", "Cookie": // "Authorization" - passing by default
 		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)

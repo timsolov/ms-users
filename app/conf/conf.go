@@ -16,16 +16,27 @@ var (
 )
 
 type Config struct {
-	APP  APP
-	DB   DB
-	GRPC GRPC
-	HTTP HTTP
-	LOG  LOG
+	APP   APP
+	TOKEN TOKEN
+	DB    DB
+	GRPC  GRPC
+	HTTP  HTTP
+	LOG   LOG
 }
 
 // APP describes
 type APP struct {
 	PrintConfig bool `env:"PRINT_CONFIG"`
+}
+
+// TOKEN describes token configuration
+type TOKEN struct {
+	Secret       string        `env:"TOKEN_SECRET,required"`
+	Issuer       string        `env:"TOKEN_ISSUER" envDefault:"ms-users"`
+	AccessLife   time.Duration `env:"TOKEN_ACCESS_LIFE" envDefault:"24h"`
+	RefreshLife  time.Duration `env:"TOKEN_REFRESH_LIFE" envDefault:"24h"`
+	AccessStore  string        `env:"TOKEN_ACCESS_STORE" envDefault:"local"`  // local - local storage, cookie - cookie, both - both
+	RefreshStore string        `env:"TOKEN_REFRESH_STORE" envDefault:"local"` // local - local storage, cookie - cookie, both - both
 }
 
 // DB describes database config

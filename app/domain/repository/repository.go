@@ -15,4 +15,6 @@ type Repository interface {
 	CreateUserAggregate(ctx context.Context, ua *entity.UserAggregate) error
 	// Profile returns profile record
 	Profile(ctx context.Context, profileID uuid.UUID) (entity.User, error)
+	// EmailPassIdentByEmail returns email-pass identity by email.
+	EmailPassIdentByEmail(ctx context.Context, email string) (ident entity.Ident, err error)
 }

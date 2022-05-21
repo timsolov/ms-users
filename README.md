@@ -6,6 +6,7 @@
 - Graceful shutdown;
 - Accept interface, return struct pattern;
 - CQRS pattern for usecases;
+- PASETO token;
 
 ## Prometeus metrics
 
