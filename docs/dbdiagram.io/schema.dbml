@@ -24,3 +24,12 @@ Table idents {
 }
 
 Ref: idents.user_id > u.user_id [delete: cascade]
+
+Table confirms {
+    confirm_id UUID           [pk]
+    password   varchar(1024)  [not null] // ecrypted password for confirmation
+    kind       int            [not null] // kind of confirmation
+    vars       jsonb          [not null, default: '{}']
+    created_at timestamptz    [not null, default: 'NOW()']
+    valid_till timestamptz    [not null]
+}

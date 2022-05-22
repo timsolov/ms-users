@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"ms-users/app/domain"
+	"ms-users/app/infrastructure/event"
 	"time"
 
 	"github.com/google/uuid"
@@ -71,7 +72,7 @@ func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (domain.User, error)
 }
 
 // CreateUserAggregate creates new ident record with user record.
-func (d *DB) CreateUserAggregate(ctx context.Context, ua *domain.UserAggregate) error {
+func (d *DB) CreateUserAggregate(ctx context.Context, ua *domain.UserAggregate, confirm *domain.Confirm, events []event.Event) error {
 	err := d.atomic(ctx, func(tx *DB) error {
 		err := tx.CreateUser(ctx, &ua.User)
 		if err != nil {
@@ -82,6 +83,20 @@ func (d *DB) CreateUserAggregate(ctx context.Context, ua *domain.UserAggregate) 
 			err = tx.CreateIdent(ctx, &ua.Idents[i])
 			if err != nil {
 				return errors.Wrapf(err, "create ident[%d]", i)
+			}
+		}
+
+		for i := 0; i < len(events); i++ {
+			err = tx.Publish(ctx, events[i].Subject, events[i].Payload)
+			if err != nil {
+				return errors.Wrapf(err, "publish events[%d]", i)
+			}
+		}
+
+		if confirm != nil {
+			err = tx.CreateConfirm(ctx, confirm)
+			if err != nil {
+				return errors.Wrap(err, "create confirm")
 			}
 		}
 

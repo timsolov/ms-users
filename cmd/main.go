@@ -60,7 +60,16 @@ func main() {
 	err = cli.Run(
 		ctx,
 		cli.NewMigrateCmd(log, d),
-		cli.NewCreateEmailPassIdentityCmd(log, create_emailpass_identity.New(d)),
+		cli.NewCreateEmailPassIdentityCmd(
+			log,
+			create_emailpass_identity.New(
+				d,
+				cfg.APP.BaseURL,
+				cfg.APP.FromEmail,
+				cfg.APP.FromName,
+				cfg.APP.ConfirmLife,
+			),
+		),
 	)
 	if err != nil {
 		log.Errorf("cli: %v", err)
@@ -74,8 +83,14 @@ func main() {
 			Whoami:  whoami.New(d, &cfg.TOKEN),
 		},
 		&web.Commands{
-			CreateEmailPassIdentity: create_emailpass_identity.New(d),
-			AuthEmailPass:           auth_emailpass.New(d, &cfg.TOKEN),
+			CreateEmailPassIdentity: create_emailpass_identity.New(
+				d,
+				cfg.APP.BaseURL,
+				cfg.APP.FromEmail,
+				cfg.APP.FromName,
+				cfg.APP.ConfirmLife,
+			),
+			AuthEmailPass: auth_emailpass.New(d, &cfg.TOKEN),
 		},
 	)
 

@@ -1,4 +1,6 @@
 -- +migrate Up
+CREATE EXTENSION IF NOT EXISTS pgq;
+
 CREATE TABLE "users" (
   "user_id" UUID PRIMARY KEY,
   "view" varchar(20) NOT NULL,
@@ -23,6 +25,15 @@ CREATE TABLE "idents" (
 ALTER TABLE "idents" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("user_id") ON DELETE CASCADE;
 
 CREATE INDEX "ident_idx" ON "idents" ("ident");
+
+CREATE TABLE "confirms" (
+  "confirm_id" UUID PRIMARY KEY,
+  "password" varchar(1024) NOT NULL,
+  "kind" int NOT NULL,
+  "vars" jsonb NOT NULL DEFAULT '{}',
+  "created_at" timestamptz NOT NULL DEFAULT 'NOW()',
+  "valid_till" timestamptz NOT NULL
+);
 
 -- +migrate Down
 

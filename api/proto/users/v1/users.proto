@@ -97,7 +97,7 @@ service UserService {
   //
   rpc Confirm(ConfirmRequest) returns (ConfirmResponse) {
     option (google.api.http) = {
-      get: "/v1/identities/confirm/{code}"
+      get: "/v1/identities/confirm/{encoded}"
     };
   }
 
@@ -170,7 +170,7 @@ message AuthEmailPassResponse {
 // Confirm
 
 message ConfirmRequest {
-  string code = 1;
+  string encoded = 1;
 }
 
 message ConfirmResponse {}

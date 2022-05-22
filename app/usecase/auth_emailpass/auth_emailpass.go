@@ -4,11 +4,11 @@ import (
 	"context"
 	"ms-users/app/conf"
 	"ms-users/app/domain"
+	"ms-users/app/infrastructure/password"
 	"time"
 
 	"github.com/o1egl/paseto"
 	"github.com/pkg/errors"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Repository describes repository contract
@@ -43,7 +43,7 @@ func (uc *UseCase) Do(ctx context.Context, cmd *Params) (accessToken, refreshTok
 		return
 	}
 
-	if !comparePassword(ident.Password, cmd.Password) {
+	if !password.Verify(ident.Password, cmd.Password) {
 		err = domain.ErrUnauthorized
 		return
 	}
@@ -64,9 +64,4 @@ func (uc *UseCase) Do(ctx context.Context, cmd *Params) (accessToken, refreshTok
 	}
 
 	return
-}
-
-// comparePassword compare encrypted password with plain password
-func comparePassword(encrypted, plain string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(encrypted), []byte(plain)) == nil
 }
