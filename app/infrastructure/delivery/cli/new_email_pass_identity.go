@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"ms-users/app/infrastructure/logger"
+	"ms-users/app/common/logger"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"os"
 

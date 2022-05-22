@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"ms-users/app/infrastructure/logger"
+	"ms-users/app/common/logger"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

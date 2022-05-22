@@ -3,7 +3,7 @@ package domain
 import (
 	"encoding/base64"
 	"encoding/json"
-	"ms-users/app/infrastructure/password"
+	"ms-users/app/common/password"
 	"time"
 
 	"github.com/google/uuid"

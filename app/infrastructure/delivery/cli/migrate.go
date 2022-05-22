@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"ms-users/app/infrastructure/logger"
+	"ms-users/app/common/logger"
 	"os"
 
 	"github.com/spf13/cobra"

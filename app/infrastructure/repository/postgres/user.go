@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
+	"ms-users/app/common/event"
 	"ms-users/app/domain"
-	"ms-users/app/infrastructure/event"
 	"time"
 
 	"github.com/google/uuid"

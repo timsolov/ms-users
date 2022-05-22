@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"ms-users/app/infrastructure/logger"
+	"ms-users/app/common/logger"
 	"ms-users/third_party"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"

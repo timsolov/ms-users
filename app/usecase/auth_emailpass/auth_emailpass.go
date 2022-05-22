@@ -2,9 +2,9 @@ package auth_emailpass
 
 import (
 	"context"
+	"ms-users/app/common/password"
 	"ms-users/app/conf"
 	"ms-users/app/domain"
-	"ms-users/app/infrastructure/password"
 	"time"
 
 	"github.com/o1egl/paseto"

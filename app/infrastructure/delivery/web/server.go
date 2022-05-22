@@ -1,8 +1,8 @@
 package web
 
 import (
+	"ms-users/app/common/logger"
 	"ms-users/app/infrastructure/delivery/web/pb"
-	"ms-users/app/infrastructure/logger"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"

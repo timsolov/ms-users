@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"ms-users/app/infrastructure/logger"
+	"ms-users/app/common/logger"
 )
 
 type responseWriter struct {

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	"ms-users/app/infrastructure/logger"
+	"ms-users/app/common/logger"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"

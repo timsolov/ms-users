@@ -3,9 +3,9 @@ package create_emailpass_identity
 import (
 	"context"
 	"fmt"
+	"ms-users/app/common/event"
+	"ms-users/app/common/password"
 	"ms-users/app/domain"
-	"ms-users/app/infrastructure/event"
-	"ms-users/app/infrastructure/password"
 	"time"
 
 	"github.com/google/uuid"
