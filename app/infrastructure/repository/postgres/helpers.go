@@ -3,8 +3,21 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"ms-users/app/common/event"
 	"ms-users/app/domain"
+
+	"github.com/pkg/errors"
 )
+
+func (d *DB) publishEvents(ctx context.Context, events []event.Event) error {
+	for i := 0; i < len(events); i++ {
+		err := d.Publish(ctx, events[i].Subject, events[i].Payload)
+		if err != nil {
+			return errors.Wrapf(err, "publish events[%d]", i)
+		}
+	}
+	return nil
+}
 
 func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interface{}) error { //nolint: unparam
 	var (

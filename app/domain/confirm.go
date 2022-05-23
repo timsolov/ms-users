@@ -19,22 +19,24 @@ const (
 
 // Confirm describes confirm body
 type Confirm struct {
-	ConfirmID string            `json:"c"`
-	Password  string            `json:"p"`
-	Kind      ConfirmKind       `json:"-"`
-	Vars      map[string]string `json:"-"`
-	CreatedAt time.Time         `json:"-"`
-	ValidTill time.Time         `json:"-"`
+	ConfirmID         uuid.UUID         `json:"c"`
+	Password          string            `json:"p"`
+	EncryptedPassword string            `json:"-"`
+	Kind              ConfirmKind       `json:"-"`
+	Vars              map[string]string `json:"-"`
+	CreatedAt         time.Time         `json:"-"`
+	ValidTill         time.Time         `json:"-"`
 }
 
-func NewConfirm(kind ConfirmKind, life time.Duration, vars map[string]string) (confirm Confirm, err error) {
-	confirmPass, err := password.Encrypt(uuid.NewString())
+func NewConfirm(kind ConfirmKind, plainPassword string, life time.Duration, vars map[string]string) (confirm Confirm, err error) {
+	encryptedPassword, err := password.Encrypt(plainPassword)
 	if err != nil {
 		err = errors.Wrap(err, "encrypt confirm password")
 		return
 	}
-	confirm.ConfirmID = uuid.NewString()
-	confirm.Password = confirmPass
+	confirm.ConfirmID = uuid.New()
+	confirm.Password = plainPassword
+	confirm.EncryptedPassword = encryptedPassword
 	confirm.CreatedAt = time.Now()
 	confirm.ValidTill = confirm.CreatedAt.Add(life)
 	confirm.Kind = kind

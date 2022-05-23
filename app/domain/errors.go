@@ -10,4 +10,5 @@ var (
 	ErrMismatch  = errors.New("mismatch")
 
 	ErrUnauthorized = errors.New("unauthorized")
+	ErrBadFormat    = errors.New("bad format")
 )

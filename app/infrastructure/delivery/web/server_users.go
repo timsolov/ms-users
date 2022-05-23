@@ -6,6 +6,7 @@ import (
 	"ms-users/app/domain"
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/usecase/auth_emailpass"
+	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
 	"ms-users/app/usecase/whoami"
@@ -29,13 +30,13 @@ func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmail
 		Password:  in.GetPassword(),
 	}
 
-	userID, err := s.commands.CreateEmailPassIdentity.Run(ctx, &createUser)
+	userID, err := s.commands.CreateEmailPassIdentity.Do(ctx, &createUser)
 	if err != nil {
 		switch errors.Cause(err) {
 		case domain.ErrNotUnique:
 			err = BadRequest(ctx, ErrIdentityDuplicated)
 		default:
-			err = Internal(ctx, s.log, "usecase createUserPassIdentity: %s", err)
+			err = Internal(ctx, s.log, "CreateEmailPassIdentity usecase: %s", err)
 		}
 		return &pb.CreateEmailPassIdentityResponse{}, err
 	}
@@ -56,13 +57,13 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 		return nil, Unauthorized(ctx)
 	}
 
-	user, err := s.queries.Profile.Run(ctx, &profile.Params{UserID: userID})
+	user, err := s.queries.Profile.Do(ctx, &profile.Params{UserID: userID})
 	if err != nil {
 		switch errors.Cause(err) {
 		case domain.ErrNotFound:
 			return out, Unauthorized(ctx)
 		default:
-			return out, Internal(ctx, s.log, "usecase: %s", err)
+			return out, Internal(ctx, s.log, "Profile usecase: %s", err)
 		}
 	}
 
@@ -84,8 +85,22 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 //
 // It's possible to confirm different type of operations.
 //
-func (s *Server) Confirm(_ context.Context, _ *pb.ConfirmRequest) (*pb.ConfirmResponse, error) {
-	panic("not implemented") // TODO: Implement
+func (s *Server) Confirm(ctx context.Context, in *pb.ConfirmRequest) (out *pb.ConfirmResponse, err error) {
+	out = &pb.ConfirmResponse{}
+
+	err = s.commands.Confirm.Do(ctx, &confirm.Params{
+		Encoded: in.GetEncoded(),
+	})
+	if err != nil {
+		switch errors.Cause(err) {
+		case domain.ErrNotFound, domain.ErrMismatch:
+			return out, BadRequest(ctx, err)
+		default:
+			return out, Internal(ctx, s.log, "Confirm usecase: %s", err)
+		}
+	}
+
+	return out, OK(ctx)
 }
 
 // Authenticate users by email-pasword.
@@ -100,7 +115,13 @@ func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest)
 		Password: in.GetPassword(),
 	})
 	if err != nil {
-		return out, Internal(ctx, s.log, "usecase: %s", err)
+		switch errors.Cause(err) {
+		case auth_emailpass.ErrNotConfirmed, domain.ErrUnauthorized:
+			err = Unauthorized(ctx, err)
+		default:
+			err = Internal(ctx, s.log, "AuthEmailPass usecase: %s", err)
+		}
+		return out, err
 	}
 
 	out.AccessToken = accessToken

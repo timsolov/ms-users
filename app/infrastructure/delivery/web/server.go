@@ -4,6 +4,7 @@ import (
 	"ms-users/app/common/logger"
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/usecase/auth_emailpass"
+	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
 	"ms-users/app/usecase/whoami"
@@ -19,6 +20,7 @@ type Queries struct {
 type Commands struct {
 	CreateEmailPassIdentity create_emailpass_identity.UseCase
 	AuthEmailPass           auth_emailpass.UseCase
+	Confirm                 confirm.UseCase
 }
 
 // Server implements the protobuf interface

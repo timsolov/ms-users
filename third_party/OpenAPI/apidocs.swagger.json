@@ -37,6 +37,12 @@
             "schema": {
               "$ref": "#/definitions/rpcStatus"
             }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
           }
         },
         "parameters": [
@@ -54,7 +60,7 @@
         ]
       }
     },
-    "/v1/identities/confirm/{code}": {
+    "/v1/identities/confirm/{encoded}": {
       "get": {
         "summary": "Confirm universal confirm link",
         "description": "Access: any\n\nIt's possible to confirm different type of operations.",
@@ -71,11 +77,23 @@
             "schema": {
               "$ref": "#/definitions/rpcStatus"
             }
+          },
+          "401": {
+            "description": "Unauthorized request",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
           }
         },
         "parameters": [
           {
-            "name": "code",
+            "name": "encoded",
             "in": "path",
             "required": true,
             "type": "string"
@@ -102,6 +120,12 @@
             "description": "Validation error",
             "schema": {
               "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
             }
           }
         },
@@ -137,6 +161,12 @@
             "schema": {
               "$ref": "#/definitions/rpcStatus"
             }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
           }
         },
         "tags": [
@@ -169,6 +199,12 @@
           },
           "401": {
             "description": "Unauthorized request",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
             "schema": {
               "$ref": "#/definitions/v1Empty"
             }

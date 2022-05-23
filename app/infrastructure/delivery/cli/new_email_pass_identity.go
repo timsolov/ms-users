@@ -21,7 +21,7 @@ func NewCreateEmailPassIdentityCmd(log logger.Logger, uc create_emailpass_identi
 		Short: "Create user and email-pass identity for him",
 		Args:  cobra.ExactArgs(exactArgs),
 		Run: func(cmd *cobra.Command, args []string) {
-			userID, err := uc.Run(cmd.Context(), &create_emailpass_identity.Params{
+			userID, err := uc.Do(cmd.Context(), &create_emailpass_identity.Params{
 				Email:          args[emailIdx],
 				EmailConfirmed: true,
 				Password:       args[passIdx],

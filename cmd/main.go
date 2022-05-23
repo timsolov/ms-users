@@ -16,6 +16,7 @@ import (
 	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/infrastructure/repository/postgres"
 	"ms-users/app/usecase/auth_emailpass"
+	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
 	"ms-users/app/usecase/whoami"
@@ -91,6 +92,7 @@ func main() {
 				cfg.APP.ConfirmLife,
 			),
 			AuthEmailPass: auth_emailpass.New(d, &cfg.TOKEN),
+			Confirm:       confirm.New(d),
 		},
 	)
 

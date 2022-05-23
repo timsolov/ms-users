@@ -26,12 +26,12 @@ gen:
 .PHONY: lint
 lint:
 	buf lint api/proto
-	golangci-lint run ./...
+	golangci-lint run --go=1.17 ./...
 
 .PHONY: tools
 tools:
 	go install github.com/golang/mock/mockgen@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2
 	go install github.com/bufbuild/buf/cmd/buf@latest
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest

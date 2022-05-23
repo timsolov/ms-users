@@ -14,8 +14,8 @@ type SendTemplate struct {
 	Vars     []byte `json:"vars"`     // marshaled json object with variables such as subject, receiver, send, sender_name and others to use in template
 }
 
-func EmailPassConfirm(lang, fromEmail, fromName, toEmail, toName, url string) (Event, error) {
-	const tplName = "email-pass-confirm"
+func SendEmail_EmailConfirmation(lang, fromEmail, fromName, toEmail, toName, url string) (Event, error) {
+	const tplName = "email-confirmation"
 
 	var ev Event
 

@@ -52,9 +52,16 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   }
   responses: {
     key: "400"
-    value: { 
+    value: {
       description: "Validation error"
       schema: { json_schema: { ref: ".google.rpc.Status" }}
+    }
+  }
+  responses: {
+    key: "500"
+    value: {
+      description: "Internal server error"
+      schema: { json_schema: { ref: ".users.v1.Empty" }}
     }
   }
 };
@@ -98,6 +105,15 @@ service UserService {
   rpc Confirm(ConfirmRequest) returns (ConfirmResponse) {
     option (google.api.http) = {
       get: "/v1/identities/confirm/{encoded}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "401"
+        value: { 
+          description: "Unauthorized request"
+          schema: { json_schema: { ref: ".users.v1.Empty" }}
+        }
+      }
     };
   }
 

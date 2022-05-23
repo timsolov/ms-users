@@ -1,6 +1,9 @@
 -- +migrate Up
 CREATE EXTENSION IF NOT EXISTS pgq;
 
+SELECT pgq.create_queue('outbox');
+SELECT pgq.register_consumer('outbox', 'consumer');
+
 CREATE TABLE "users" (
   "user_id" UUID PRIMARY KEY,
   "view" varchar(20) NOT NULL,
@@ -37,5 +40,7 @@ CREATE TABLE "confirms" (
 
 -- +migrate Down
 
+SELECT pgq.unregister_consumer('outbox', 'consumer');
+SELECT pgq.drop_queue('outbox');
 DROP TABLE idents;
 DROP TABLE profiles;

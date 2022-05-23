@@ -29,7 +29,7 @@ func New(repo Repository) UseCase {
 	}
 }
 
-func (uc UseCase) Run(ctx context.Context, query *Params) (user domain.User, err error) {
+func (uc UseCase) Do(ctx context.Context, query *Params) (user domain.User, err error) {
 	user, err = uc.repo.Profile(ctx, query.UserID)
 	if err != nil {
 		return user, err

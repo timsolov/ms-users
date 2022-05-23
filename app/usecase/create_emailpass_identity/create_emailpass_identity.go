@@ -46,7 +46,7 @@ func New(repo Repository, baseURL, fromEmail, fromName string, confirmLife time.
 	}
 }
 
-func (uc UseCase) Run(ctx context.Context, cmd *Params) (profileID uuid.UUID, err error) {
+func (uc UseCase) Do(ctx context.Context, cmd *Params) (profileID uuid.UUID, err error) {
 	// create encrypted password
 	encryptedPass, err := password.Encrypt(cmd.Password)
 	if err != nil {
@@ -85,10 +85,14 @@ func (uc UseCase) Run(ctx context.Context, cmd *Params) (profileID uuid.UUID, er
 	}
 
 	// prepare variables for email sending
+	confirmPassword := uuid.New().String()
 	confirmRecord, err := domain.NewConfirm(
 		domain.EmailConfirmKind,
+		confirmPassword,
 		uc.confirmLife,
-		nil, /* vars */
+		map[string]string{ /* vars */
+			"email": cmd.Email,
+		},
 	)
 	if err != nil {
 		return uuid.Nil, errors.Wrap(err, "create new confirm struct")
@@ -101,7 +105,7 @@ func (uc UseCase) Run(ctx context.Context, cmd *Params) (profileID uuid.UUID, er
 	url := fmt.Sprintf("%s/confirm/%s", uc.baseURL, confirmB64)
 	toEmail := cmd.Email
 	toName := fmt.Sprintf("%s %s", cmd.FirstName, cmd.LastName)
-	confirmEmail, err := event.EmailPassConfirm(
+	confirmEmail, err := event.SendEmail_EmailConfirmation(
 		"en", // TODO: en language should be user's language not constant
 		uc.fromEmail,
 		uc.fromName,
