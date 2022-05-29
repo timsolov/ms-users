@@ -72,5 +72,5 @@ func (uc *UseCase) Do(ctx context.Context, cmd *Params) (accessToken, refreshTok
 		return
 	}
 
-	return
+	return accessToken, refreshToken, err
 }

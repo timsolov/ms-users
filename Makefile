@@ -38,5 +38,5 @@ tools:
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
-	go install github.com/go-critic/go-critic/cmd/gocritic@latest
+	go install github.com/go-critic/go-critic/cmd/gocritic@v0.6.3
 	go install github.com/srikrsna/protoc-gen-gotag@v0.6.2

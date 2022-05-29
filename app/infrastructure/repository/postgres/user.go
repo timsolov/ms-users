@@ -86,18 +86,16 @@ func (d *DB) CreateUserAggregate(ctx context.Context, ua *domain.UserAggregate, 
 			}
 		}
 
-		for i := 0; i < len(events); i++ {
-			err = tx.Publish(ctx, events[i].Subject, events[i].Payload)
-			if err != nil {
-				return errors.Wrapf(err, "publish events[%d]", i)
-			}
-		}
-
 		if confirm != nil {
-			err = tx.CreateConfirm(ctx, confirm)
+			err = tx.CreateConfirm(ctx, confirm, event.None)
 			if err != nil {
 				return errors.Wrap(err, "create confirm")
 			}
+		}
+
+		err = tx.publishEvents(ctx, events)
+		if err != nil {
+			return errors.Wrap(err, "publish events")
 		}
 
 		return nil

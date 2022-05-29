@@ -117,6 +117,30 @@ service UserService {
     };
   }
 
+  // RetryConfirm resends confirmation code.
+  //
+  // This end-point is utilized when confirmation code is expired and 
+  // user wants to reissue new confirmation code.
+  //
+  // For email-pass identity should be provided email and if identity with related 
+  // email exists confirmation will be sent to that email.
+  //
+  rpc RetryConfirm(RetryConfirmRequest) returns (RetryConfirmResponse) {
+    option (google.api.http) = {
+      post: "/v1/identities/retry-confirm"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "204"
+        value: { 
+          description: "Identity not found"
+          schema: { json_schema: { ref: ".users.v1.Empty" }}
+        }
+      }
+    };
+  }
+
   // Profile detail info.
   //
   // Access: X-User-Id
@@ -190,6 +214,14 @@ message ConfirmRequest {
 }
 
 message ConfirmResponse {}
+
+// RetryConfirm
+
+message RetryConfirmRequest {
+  string ident = 1 [(tagger.tags) = "validate:\"required,min=5,max=256\"" ];
+}
+
+message RetryConfirmResponse {}
 
 // Profile
 

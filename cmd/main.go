@@ -19,6 +19,7 @@ import (
 	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
+	"ms-users/app/usecase/retry_confirm"
 	"ms-users/app/usecase/whoami"
 
 	"google.golang.org/grpc"
@@ -78,21 +79,23 @@ func main() {
 	}
 
 	// prepare web/gRPC server handlers
+	createEmailPassIdentityUseCase := create_emailpass_identity.New(
+		d,
+		cfg.APP.BaseURL,
+		cfg.APP.FromEmail,
+		cfg.APP.FromName,
+		cfg.APP.ConfirmLife,
+	)
 	webServer := web.New(log,
 		&web.Queries{
 			Profile: profile.New(d),
 			Whoami:  whoami.New(d, &cfg.TOKEN),
 		},
 		&web.Commands{
-			CreateEmailPassIdentity: create_emailpass_identity.New(
-				d,
-				cfg.APP.BaseURL,
-				cfg.APP.FromEmail,
-				cfg.APP.FromName,
-				cfg.APP.ConfirmLife,
-			),
-			AuthEmailPass: auth_emailpass.New(d, &cfg.TOKEN),
-			Confirm:       confirm.New(d),
+			CreateEmailPassIdentity: createEmailPassIdentityUseCase,
+			AuthEmailPass:           auth_emailpass.New(d, &cfg.TOKEN),
+			Confirm:                 confirm.New(d),
+			RetryConfirm:            retry_confirm.New(d, createEmailPassIdentityUseCase),
 		},
 	)
 

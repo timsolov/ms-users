@@ -9,6 +9,7 @@ import (
 	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
+	"ms-users/app/usecase/retry_confirm"
 	"ms-users/app/usecase/whoami"
 
 	"github.com/google/uuid"
@@ -98,6 +99,38 @@ func (s *Server) Confirm(ctx context.Context, in *pb.ConfirmRequest) (out *pb.Co
 		default:
 			return out, Internal(ctx, s.log, "Confirm usecase: %s", err)
 		}
+	}
+
+	return out, OK(ctx)
+}
+
+// RetryConfirm resends confirmation code.
+//
+// This end-point is utilized when confirmation code is expired and
+// user wants to reissue new confirmation code.
+//
+// For email-pass identity should be provided email and if identity with related
+// email exists confirmation will be sent to that email.
+//
+func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (*pb.RetryConfirmResponse, error) {
+	out := &pb.RetryConfirmResponse{}
+
+	ident := in.GetIdent()
+
+	// we will do validation inside usecase
+	err := s.commands.RetryConfirm.Do(ctx, &retry_confirm.Params{
+		Ident: ident,
+	})
+
+	switch errors.Cause(err) {
+	case nil:
+		// pass
+	case retry_confirm.ErrEmailPassNotFound: // 204
+		return out, NoContent(ctx, err)
+	case retry_confirm.ErrUnknownIdent: // 400
+		return out, BadRequest(ctx, err)
+	default:
+		return out, Internal(ctx, s.log, "RetryConfirm usecase: %s", err)
 	}
 
 	return out, OK(ctx)

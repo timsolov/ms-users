@@ -152,6 +152,10 @@ func (d *DB) infof(format string, args ...interface{}) {
 }
 
 func (d *DB) atomic(ctx context.Context, fn func(tx *DB) error) error {
+	if d.tx != nil {
+		return fn(d)
+	}
+
 	tx, err := d.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return errors.Wrap(err, "begin tx")

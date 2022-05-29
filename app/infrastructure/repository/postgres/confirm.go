@@ -2,28 +2,37 @@ package postgres
 
 import (
 	"context"
+	"ms-users/app/common/event"
 	"ms-users/app/domain"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 // CreateConfirm creates new confirm record
-func (d *DB) CreateConfirm(ctx context.Context, m *domain.Confirm) error {
+func (d *DB) CreateConfirm(ctx context.Context, m *domain.Confirm, events []event.Event) error {
 	if m.CreatedAt.IsZero() {
 		m.CreatedAt = time.Now()
 	}
 
-	err := d.execr(ctx, 1,
-		`INSERT 
-			INTO "confirms" (confirm_id, password, kind, vars, created_at, valid_till)
-			VALUES (?,?,?,?,?,?)`,
-		m.ConfirmID, m.EncryptedPassword, m.Kind, m.Vars, m.CreatedAt, m.ValidTill)
-	if err != nil {
-		return err
-	}
+	return d.atomic(ctx, func(tx *DB) error {
+		err := d.execr(ctx, 1,
+			`INSERT 
+				INTO "confirms" (confirm_id, password, kind, vars, created_at, valid_till)
+				VALUES (?,?,?,?,?,?)`,
+			m.ConfirmID, m.EncryptedPassword, m.Kind, m.Vars, m.CreatedAt, m.ValidTill)
+		if err != nil {
+			return errors.Wrap(err, "create confirm record")
+		}
 
-	return nil
+		err = tx.publishEvents(ctx, events)
+		if err != nil {
+			return errors.Wrap(err, "publish events")
+		}
+
+		return nil
+	})
 }
 
 // ReadConfirm returns confirm record by confirm_id.

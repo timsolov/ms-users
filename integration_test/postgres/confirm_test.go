@@ -2,6 +2,7 @@ package postgres_test
 
 import (
 	"context"
+	"ms-users/app/common/event"
 	"ms-users/app/common/password"
 	"ms-users/app/conf"
 	"ms-users/app/domain"
@@ -43,7 +44,7 @@ func NewConfirm(t *testing.T, ctx context.Context, d *postgres.DB, opts ...Confi
 		opt(&confirm)
 	}
 
-	err = d.CreateConfirm(ctx, &confirm)
+	err = d.CreateConfirm(ctx, &confirm, event.None)
 	assert.NoError(t, err)
 
 	return confirm, func() {

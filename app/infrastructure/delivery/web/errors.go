@@ -27,6 +27,22 @@ func BadRequest(ctx context.Context, err error) error {
 	return Custom(ctx, codes.InvalidArgument, http.StatusBadRequest, err)
 }
 
+func NoContent(ctx context.Context, err ...error) error {
+	var e error
+	if len(err) == 1 {
+		e = err[0]
+	}
+	return Custom(ctx, codes.NotFound, http.StatusNoContent, e)
+}
+
+func NotFound(ctx context.Context, err ...error) error {
+	var e error
+	if len(err) == 1 {
+		e = err[0]
+	}
+	return Custom(ctx, codes.NotFound, http.StatusNotFound, e)
+}
+
 func Forbidden(ctx context.Context, err ...error) error {
 	var e error
 	if len(err) == 1 {

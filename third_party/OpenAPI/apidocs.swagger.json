@@ -144,6 +144,52 @@
         ]
       }
     },
+    "/v1/identities/retry-confirm": {
+      "post": {
+        "summary": "RetryConfirm resends confirmation code.",
+        "description": "This end-point is utilized when confirmation code is expired and \nuser wants to reissue new confirmation code.\n\nFor email-pass identity should be provided email and if identity with related \nemail exists confirmation will be sent to that email.",
+        "operationId": "UserService_RetryConfirm",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RetryConfirmResponse"
+            }
+          },
+          "204": {
+            "description": "Identity not found",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RetryConfirmRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/v1/profile": {
       "get": {
         "summary": "Profile detail info.",
@@ -322,6 +368,17 @@
           "type": "string"
         }
       }
+    },
+    "v1RetryConfirmRequest": {
+      "type": "object",
+      "properties": {
+        "ident": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RetryConfirmResponse": {
+      "type": "object"
     },
     "v1WhoamiResponse": {
       "type": "object",

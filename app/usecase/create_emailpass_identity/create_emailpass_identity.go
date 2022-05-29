@@ -84,37 +84,9 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (profileID uuid.UUID, err
 		Idents: []domain.Ident{ident},
 	}
 
-	// prepare variables for email sending
-	confirmPassword := uuid.New().String()
-	confirmRecord, err := domain.NewConfirm(
-		domain.EmailConfirmKind,
-		confirmPassword,
-		uc.confirmLife,
-		map[string]string{ /* vars */
-			"email": cmd.Email,
-		},
-	)
+	confirmRecord, confirmEmail, err := uc.PrepareConfirmRecordAndConfirmEmail(cmd.FirstName, cmd.LastName, cmd.Email, "en")
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "create new confirm struct")
-	}
-	confirmB64, err := confirmRecord.ToBase64()
-	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "encode confirm struct to base64")
-	}
-
-	url := fmt.Sprintf("%s/confirm/%s", uc.baseURL, confirmB64)
-	toEmail := cmd.Email
-	toName := fmt.Sprintf("%s %s", cmd.FirstName, cmd.LastName)
-	confirmEmail, err := event.SendEmail_EmailConfirmation(
-		"en", // TODO: en language should be user's language not constant
-		uc.fromEmail,
-		uc.fromName,
-		toEmail,
-		toName,
-		url,
-	)
-	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "prepare email-pass confirm event")
+		return uuid.Nil, err
 	}
 
 	err = uc.repo.CreateUserAggregate(ctx, &ua, &confirmRecord, []event.Event{confirmEmail})
@@ -123,4 +95,49 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (profileID uuid.UUID, err
 	}
 
 	return user.UserID, nil
+}
+
+func (uc UseCase) PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error) {
+	// prepare variables for email sending
+	confirmPassword := uuid.New().String()
+	confirmRecord, err = domain.NewConfirm(
+		domain.EmailConfirmKind,
+		confirmPassword,
+		uc.confirmLife,
+		map[string]string{ /* vars */
+			"email": email,
+		},
+	)
+	if err != nil {
+		err = errors.Wrap(err, "create new confirm struct")
+		return
+	}
+
+	// encode to base64
+	confirmB64, err := confirmRecord.ToBase64()
+	if err != nil {
+		err = errors.Wrap(err, "encode confirm struct to base64")
+		return
+	}
+
+	// prepare url
+	url := fmt.Sprintf("%s/confirm/%s", uc.baseURL, confirmB64)
+
+	// prepare event email.SendTemplate
+	toEmail := email
+	toName := fmt.Sprintf("%s %s", firstName, lastName)
+	confirmEmail, err = event.SendEmail_EmailConfirmation(
+		lang, // TODO: en language should be user's language not constant
+		uc.fromEmail,
+		uc.fromName,
+		toEmail,
+		toName,
+		url,
+	)
+	if err != nil {
+		err = errors.Wrap(err, "prepare event for sending email-pass confirmation")
+		return
+	}
+
+	return confirmRecord, confirmEmail, err
 }
