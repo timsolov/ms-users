@@ -5,7 +5,7 @@ import (
 	"ms-users/app/common/event"
 	"ms-users/app/conf"
 	"ms-users/app/domain"
-	"ms-users/app/infrastructure/repository/postgres"
+	"ms-users/app/repository/postgres"
 	"testing"
 	"time"
 

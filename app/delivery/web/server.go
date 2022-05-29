@@ -2,7 +2,7 @@ package web
 
 import (
 	"ms-users/app/common/logger"
-	"ms-users/app/infrastructure/delivery/web/pb"
+	"ms-users/app/delivery/web/pb"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"

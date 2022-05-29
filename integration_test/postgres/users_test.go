@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"ms-users/app/domain"
-	"ms-users/app/infrastructure/repository/postgres"
+	"ms-users/app/repository/postgres"
 	"testing"
 
 	"github.com/Pallinder/go-randomdata"

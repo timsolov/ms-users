@@ -3,8 +3,8 @@ package web
 import (
 	"context"
 
+	"ms-users/app/delivery/web/pb"
 	"ms-users/app/domain"
-	"ms-users/app/infrastructure/delivery/web/pb"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
