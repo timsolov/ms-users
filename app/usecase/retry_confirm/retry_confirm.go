@@ -16,11 +16,6 @@ var (
 	validation = validator.New()
 )
 
-var (
-	ErrUnknownIdent      = errors.New("unknown identity")
-	ErrEmailPassNotFound = errors.New("email-pass ident not found")
-)
-
 // CreateEmailPassIdentityUseCase usecase with necessary method
 type CreateEmailPassIdentityUseCase interface {
 	PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error)
@@ -68,7 +63,7 @@ func (uc *UseCase) Do(ctx context.Context, cmd *Params) (err error) {
 	case domain.EmailPassIdent:
 		return uc.retryEmailPassConfirm(ctx, cmd.Ident)
 	default:
-		return ErrUnknownIdent
+		return domain.ErrUnknownIdent
 	}
 }
 
@@ -78,7 +73,7 @@ func (uc *UseCase) retryEmailPassConfirm(ctx context.Context, email string) erro
 	if err != nil {
 		// 204 - no content when domain.ErrNotFound returned
 		if errors.Cause(err) == domain.ErrNotFound {
-			err = ErrEmailPassNotFound
+			err = domain.ErrEmailPassNotFound
 		}
 		return errors.Wrap(err, "request email-pass ident from db") // 500 - otherwise
 	}

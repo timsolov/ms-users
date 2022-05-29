@@ -34,8 +34,8 @@ func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmail
 	userID, err := s.commands.CreateEmailPassIdentity.Do(ctx, &createUser)
 	if err != nil {
 		switch errors.Cause(err) {
-		case domain.ErrNotUnique:
-			err = BadRequest(ctx, ErrIdentityDuplicated)
+		case domain.ErrIdentityDuplicated:
+			err = BadRequest(ctx, err)
 		default:
 			err = Internal(ctx, s.log, "CreateEmailPassIdentity usecase: %s", err)
 		}
@@ -125,9 +125,9 @@ func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (
 	switch errors.Cause(err) {
 	case nil:
 		// pass
-	case retry_confirm.ErrEmailPassNotFound: // 204
+	case domain.ErrEmailPassNotFound: // 204
 		return out, NoContent(ctx, err)
-	case retry_confirm.ErrUnknownIdent: // 400
+	case domain.ErrUnknownIdent: // 400
 		return out, BadRequest(ctx, err)
 	default:
 		return out, Internal(ctx, s.log, "RetryConfirm usecase: %s", err)
@@ -149,7 +149,7 @@ func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest)
 	})
 	if err != nil {
 		switch errors.Cause(err) {
-		case auth_emailpass.ErrNotConfirmed, domain.ErrUnauthorized:
+		case domain.ErrNotConfirmed, domain.ErrUnauthorized:
 			err = Unauthorized(ctx, err)
 		default:
 			err = Internal(ctx, s.log, "AuthEmailPass usecase: %s", err)

@@ -91,7 +91,10 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (profileID uuid.UUID, err
 
 	err = uc.repo.CreateUserAggregate(ctx, &ua, &confirmRecord, []event.Event{confirmEmail})
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "create user record in db")
+		if errors.Cause(err) == domain.ErrNotUnique {
+			err = domain.ErrIdentityDuplicated // 400
+		}
+		return uuid.Nil, errors.Wrap(err, "create user record in db") // 500
 	}
 
 	return user.UserID, nil

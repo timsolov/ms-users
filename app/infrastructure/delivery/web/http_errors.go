@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -12,11 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-)
-
-var (
-	ErrIdentityDuplicated = errors.New("identity duplicated")
-	ErrTokenNotFound      = errors.New("token not found")
 )
 
 func Errorf(code codes.Code, format string, args ...interface{}) error {

@@ -11,10 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	ErrNotConfirmed = errors.New("ident is not confirmed")
-)
-
 // Repository describes repository contract
 type Repository interface {
 	// EmailPassIdentByEmail returns email-pass identity by email.
@@ -48,7 +44,7 @@ func (uc *UseCase) Do(ctx context.Context, cmd *Params) (accessToken, refreshTok
 	}
 
 	if !ident.IdentConfirmed {
-		err = ErrNotConfirmed
+		err = domain.ErrNotConfirmed
 		return
 	}
 
