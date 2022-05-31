@@ -70,7 +70,7 @@ service UserService {
 
   // Creates new profile with email-password identity.
   //
-  // Access: any
+  // Access: Public
   //
   // For creating new profile you have to provide:
   // - email (required);
@@ -87,7 +87,7 @@ service UserService {
 
   // Authenticate users by email-pasword.
   //
-  // Access: any
+  // Access: Public
   //
   rpc AuthEmailPass(AuthEmailPassRequest) returns (AuthEmailPassResponse) {
     option (google.api.http) = {
@@ -98,7 +98,7 @@ service UserService {
 
   // Confirm universal confirm link
   //
-  // Access: any
+  // Access: Public
   //
   // It's possible to confirm different type of operations.
   //
@@ -118,6 +118,8 @@ service UserService {
   }
 
   // RetryConfirm resends confirmation code.
+  //
+  // Access: Public
   //
   // This end-point is utilized when confirmation code is expired and 
   // user wants to reissue new confirmation code.
@@ -158,6 +160,8 @@ service UserService {
 
   // Whoami returns user_id by access_token.
   //
+  // Access: Bearer or Cookie
+  //
   // This end-point considers you have an access_token in Cookie or Authorization header.
   // It's possible to use it in authentication middleware for authenticate users.
   //
@@ -167,8 +171,8 @@ service UserService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: {
-        security_requirement: {key: "Bearer"}
-        security_requirement: {key: "Cookie"}
+        security_requirement: { key: "Bearer" }
+        security_requirement: { key: "Cookie" }
       }
       responses: {
         key: "401"

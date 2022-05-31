@@ -23,7 +23,7 @@
     "/v1/auth/email-pass": {
       "post": {
         "summary": "Authenticate users by email-pasword.",
-        "description": "Access: any",
+        "description": "Access: Public",
         "operationId": "UserService_AuthEmailPass",
         "responses": {
           "200": {
@@ -63,7 +63,7 @@
     "/v1/identities/confirm/{encoded}": {
       "get": {
         "summary": "Confirm universal confirm link",
-        "description": "Access: any\n\nIt's possible to confirm different type of operations.",
+        "description": "Access: Public\n\nIt's possible to confirm different type of operations.",
         "operationId": "UserService_Confirm",
         "responses": {
           "200": {
@@ -107,7 +107,7 @@
     "/v1/identities/email-pass": {
       "post": {
         "summary": "Creates new profile with email-password identity.",
-        "description": "Access: any\n\nFor creating new profile you have to provide:\n- email (required);\n- password (required);\n- first_name (optional);\n- last_name (optional);",
+        "description": "Access: Public\n\nFor creating new profile you have to provide:\n- email (required);\n- password (required);\n- first_name (optional);\n- last_name (optional);",
         "operationId": "UserService_CreateEmailPassIdentity",
         "responses": {
           "200": {
@@ -147,7 +147,7 @@
     "/v1/identities/retry-confirm": {
       "post": {
         "summary": "RetryConfirm resends confirmation code.",
-        "description": "This end-point is utilized when confirmation code is expired and \nuser wants to reissue new confirmation code.\n\nFor email-pass identity should be provided email and if identity with related \nemail exists confirmation will be sent to that email.",
+        "description": "Access: Public\n\nThis end-point is utilized when confirmation code is expired and \nuser wants to reissue new confirmation code.\n\nFor email-pass identity should be provided email and if identity with related \nemail exists confirmation will be sent to that email.",
         "operationId": "UserService_RetryConfirm",
         "responses": {
           "200": {
@@ -228,7 +228,7 @@
     "/v1/whoami": {
       "post": {
         "summary": "Whoami returns user_id by access_token.",
-        "description": "This end-point considers you have an access_token in Cookie or Authorization header.\nIt's possible to use it in authentication middleware for authenticate users.",
+        "description": "Access: Bearer or Cookie\n\nThis end-point considers you have an access_token in Cookie or Authorization header.\nIt's possible to use it in authentication middleware for authenticate users.",
         "operationId": "UserService_Whoami",
         "responses": {
           "200": {
