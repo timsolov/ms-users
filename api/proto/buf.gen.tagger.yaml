@@ -4,4 +4,4 @@ plugins:
     out: .
     opt:
       - paths=import
-      - outdir=app/infrastructure/delivery/web/pb
+      - outdir=app/delivery/web/pb

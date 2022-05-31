@@ -22,6 +22,7 @@ build:
 gen:
 	buf generate --template api/proto/buf.gen.yaml api/proto
 	buf generate --template api/proto/buf.gen.tagger.yaml api/proto
+	go generate ./...
 
 .PHONY: lint
 lint:
