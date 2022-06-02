@@ -23,6 +23,7 @@ gen:
 	buf generate --template api/proto/buf.gen.yaml api/proto
 	buf generate --template api/proto/buf.gen.tagger.yaml api/proto
 	go generate ./...
+	clang-format -i api/proto/users/v1/users.proto
 
 .PHONY: lint
 lint:

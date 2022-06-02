@@ -1,4 +1,4 @@
-syntax="proto3";
+syntax = "proto3";
 
 package users.v1;
 
@@ -54,20 +54,19 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     key: "400"
     value: {
       description: "Validation error"
-      schema: { json_schema: { ref: ".google.rpc.Status" }}
+      schema: { json_schema: { ref: ".google.rpc.Status" } }
     }
   }
   responses: {
     key: "500"
     value: {
       description: "Internal server error"
-      schema: { json_schema: { ref: ".users.v1.Empty" }}
+      schema: { json_schema: { ref: ".users.v1.Empty" } }
     }
   }
 };
 
 service UserService {
-
   // Creates new profile with email-password identity.
   //
   // Access: Public
@@ -111,7 +110,7 @@ service UserService {
         key: "401"
         value: { 
           description: "Unauthorized request"
-          schema: { json_schema: { ref: ".users.v1.Empty" }}
+          schema: { json_schema: { ref: ".users.v1.Empty" } }
         }
       }
     };
@@ -149,12 +148,12 @@ service UserService {
   //
   // Profile returns profile by profile_id.
   //
-  rpc Profile (ProfileRequest) returns (ProfileResponse) {
+  rpc Profile(ProfileRequest) returns (ProfileResponse) {
     option (google.api.http) = {
       get: "/v1/profile"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      security: {security_requirement: {key: "X-User-Id"}}
+      security: { security_requirement: { key: "X-User-Id" } }
     };
   }
 
@@ -165,7 +164,7 @@ service UserService {
   // This end-point considers you have an access_token in Cookie or Authorization header.
   // It's possible to use it in authentication middleware for authenticate users.
   //
-  rpc Whoami (WhoamiRequest) returns (WhoamiResponse) {
+  rpc Whoami(WhoamiRequest) returns (WhoamiResponse) {
     option (google.api.http) = {
       post: "/v1/whoami"
     };
@@ -190,10 +189,10 @@ message Empty {}
 // CreateEmailPassIdentity
 
 message CreateEmailPassIdentityRequest {
-  string email      = 1 [(tagger.tags) = "validate:\"required,email\"" ];
-  string password   = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\"" ];
-  string first_name = 3 [(tagger.tags) = "validate:\"min=3,max=20\"" ];
-  string last_name  = 4 [(tagger.tags) = "validate:\"min=3,max=20\"" ];
+  string email      = 1 [(tagger.tags) = "validate:\"required,email,min=6,max=256\""];
+  string password   = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\""];
+  string first_name = 3 [(tagger.tags) = "validate:\"min=3,max=20\""];
+  string last_name  = 4 [(tagger.tags) = "validate:\"min=3,max=20\""];
 }
 
 message CreateEmailPassIdentityResponse {
@@ -203,8 +202,8 @@ message CreateEmailPassIdentityResponse {
 // AuthEmailPass
 
 message AuthEmailPassRequest {
-  string email      = 1 [(tagger.tags) = "validate:\"required,email\"" ];
-  string password   = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\"" ];
+  string email    = 1 [(tagger.tags) = "validate:\"required,email,min=6,max=256\""];
+  string password = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\""];
 }
 
 message AuthEmailPassResponse {
@@ -222,7 +221,7 @@ message ConfirmResponse {}
 // RetryConfirm
 
 message RetryConfirmRequest {
-  string ident = 1 [(tagger.tags) = "validate:\"required,min=5,max=256\"" ];
+  string ident = 1 [(tagger.tags) = "validate:\"required,min=6,max=256\""];
 }
 
 message RetryConfirmResponse {}
