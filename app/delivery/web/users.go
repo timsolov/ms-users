@@ -254,13 +254,8 @@ func (s *Server) ResetPasswordConfirm(ctx context.Context, in *pb.ResetPasswordC
 		return out, stErr
 	}
 
-	confirmID, err := uuid.Parse(in.GetConfirmId())
-	if err != nil {
-		return out, BadRequest(ctx, err)
-	}
-
-	err = s.commands.ResetPasswordConfirm.Do(ctx, &reset_password_confirm.Params{
-		ConfirmID:    confirmID,
+	err := s.commands.ResetPasswordConfirm.Do(ctx, &reset_password_confirm.Params{
+		ConfirmIDB64: in.GetConfirmId(),
 		Verification: in.GetVerifycation(),
 		NewPassword:  in.GetPassword(),
 	})

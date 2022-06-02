@@ -147,7 +147,7 @@
     "/v1/identities/reset-password-confirm": {
       "post": {
         "summary": "ResetPasswordConfirm confirm identity recovery process and set new password.",
-        "description": "Access: Public\n\nIt's necessary to identify does the user who started recovery process is owner of\nthe identity. So this end-point waits for verification id, code and new password.",
+        "description": "Access: Public\n\nIt's necessary to identify does the user who started recovery process is owner of\nthe identity. So this end-point waits for verification id, code and new password.\n\n`confirm_id` should be in Base64-URL-encoded UUID.",
         "operationId": "UserService_ResetPasswordConfirm",
         "responses": {
           "200": {

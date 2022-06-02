@@ -117,9 +117,10 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (err error) {
 	return nil
 }
 
-func (uc UseCase) prepareConfirmRecordWithEvent(ctx context.Context, email, firstName, lastName, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error) {
+func (uc UseCase) prepareConfirmRecordWithEvent(_ context.Context, email, firstName, lastName, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error) {
+	const passwordLength = 8
 	// prepare variables for email sending
-	confirmPassword := utils.RandString(8)
+	confirmPassword := utils.RandString(passwordLength)
 	confirmRecord, err = domain.NewConfirm(
 		domain.ResetEmailPasswordConfirmKind,
 		confirmPassword,

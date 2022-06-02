@@ -169,6 +169,8 @@ service UserService {
   // It's necessary to identify does the user who started recovery process is owner of
   // the identity. So this end-point waits for verification id, code and new password.
   //
+  // `confirm_id` should be in Base64-URL-encoded UUID.
+  //
   rpc ResetPasswordConfirm(ResetPasswordConfirmRequest) returns (ResetPasswordConfirmResponse) {
     option (google.api.http) = {
       post: "/v1/identities/reset-password-confirm"
@@ -280,7 +282,7 @@ message ResetPasswordInitResponse {}
 // ResetPasswordConfirm
 
 message ResetPasswordConfirmRequest {
-  string confirm_id   = 1 [(tagger.tags) = "validate:\"required,uuid\""];
+  string confirm_id   = 1 [(tagger.tags) = "validate:\"required,min=8,max=36\""];
   string verifycation = 2 [(tagger.tags) = "validate:\"required,min=6,max=256\""];
   string password     = 3 [(tagger.tags) = "validate:\"required,min=8,max=50\""];
 }

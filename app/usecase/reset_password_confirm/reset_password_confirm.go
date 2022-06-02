@@ -4,6 +4,7 @@ import (
 	"context"
 	"ms-users/app/common/event"
 	"ms-users/app/common/password"
+	"ms-users/app/common/utils"
 	"ms-users/app/domain"
 	"time"
 
@@ -25,7 +26,7 @@ type Repository interface {
 
 // Params describes parameters
 type Params struct {
-	ConfirmID    uuid.UUID
+	ConfirmIDB64 string
 	Verification string
 	NewPassword  string
 }
@@ -44,8 +45,13 @@ func New(repo Repository) UseCase {
 
 // Do the main method for the UseCase
 func (uc UseCase) Do(ctx context.Context, cmd *Params) (err error) {
+	confirmID, err := utils.B64URLtoUUID(cmd.ConfirmIDB64)
+	if err != nil {
+		return errors.Wrap(err, "convert confirm id from base64url to uuid") // 400
+	}
+
 	// looking for confirm record by confirm_id
-	confirm, err := uc.repo.ReadConfirm(ctx, cmd.ConfirmID)
+	confirm, err := uc.repo.ReadConfirm(ctx, confirmID)
 	if err != nil {
 		// domain.ErrNotFound - 400
 		return errors.Wrap(err, "request confirm record from db") // other - 500
@@ -97,7 +103,7 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (err error) {
 		return errors.Wrap(err, "update ident record in db") // 500
 	}
 
-	_ = uc.repo.DelConfirm(ctx, cmd.ConfirmID)
+	_ = uc.repo.DelConfirm(ctx, confirmID)
 
 	return nil
 }

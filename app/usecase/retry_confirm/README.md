@@ -1,6 +1,6 @@
 # Retry to send confirmation email for new user
 
-This usecase is usefull when user wants to resend confirmation email on registration process.
+This usecase is useful when user wants to resend confirmation email on registration process.
 
 ## TODO
 - Rate limit for new requests

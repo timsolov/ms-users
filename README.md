@@ -12,7 +12,7 @@
 
 - PostgreSQL - OLTP database for storing data;
 - PgQ - PostgreSQL native queue plugin for handling `outbox` pattern;
-- ms-email - service for sending emails;
+- ms-emails - service for sending emails;
 
 ## Prometeus metrics
 
@@ -31,6 +31,7 @@ http://0.0.0.0/metric/
 - [ ] JSONSchema configurable profile info
 - [ ] Healthcheck for all dependencies
     - [ ] PostgreSQL
+    - [ ] ms-emails
 - [ ] Opentelemetry
 - [x] Prometheus
 - [ ] Authentication by Google OAuth 2.0
