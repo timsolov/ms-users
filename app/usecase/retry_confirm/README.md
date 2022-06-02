@@ -3,7 +3,6 @@
 This usecase is usefull when user wants to resend confirmation email on registration process.
 
 ## TODO
-- Check for already confirmed
 - Rate limit for new requests
 
 ## Dependencies

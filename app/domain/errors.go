@@ -21,4 +21,5 @@ var (
 	ErrExpired            = errors.New("expired")
 	ErrEmailPassNotFound  = errors.New("email-pass identity not found")
 	ErrIdentityDuplicated = errors.New("identity duplicated")
+	ErrIdentityConfirmed  = errors.New("identity confirmed")
 )

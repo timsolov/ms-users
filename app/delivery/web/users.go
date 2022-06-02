@@ -130,7 +130,7 @@ func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (
 		// pass
 	case domain.ErrEmailPassNotFound: // 204
 		return out, NoContent(ctx, err)
-	case domain.ErrUnknownIdent: // 400
+	case domain.ErrUnknownIdent, domain.ErrIdentityConfirmed: // 400
 		return out, BadRequest(ctx, err)
 	default:
 		return out, Internal(ctx, s.log, "RetryConfirm usecase: %s", err)

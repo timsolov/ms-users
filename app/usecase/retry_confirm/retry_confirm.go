@@ -78,6 +78,10 @@ func (uc *UseCase) retryEmailPassConfirm(ctx context.Context, email string) erro
 		return errors.Wrap(err, "request email-pass ident from db") // 500 - otherwise
 	}
 
+	if ident.IdentConfirmed {
+		return domain.ErrIdentityConfirmed // 400
+	}
+
 	// find user profile
 	profile, err := uc.repo.Profile(ctx, ident.UserID)
 	if err != nil {
