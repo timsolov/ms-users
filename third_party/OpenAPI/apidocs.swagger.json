@@ -144,10 +144,96 @@
         ]
       }
     },
+    "/v1/identities/reset-password-confirm": {
+      "post": {
+        "summary": "ResetPasswordConfirm confirm identity recovery process and set new password.",
+        "description": "Access: Public\n\nIt's necessary to identify does the user who started recovery process is owner of\nthe identity. So this end-point waits for verification id, code and new password.",
+        "operationId": "UserService_ResetPasswordConfirm",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordConfirmResponse"
+            }
+          },
+          "204": {
+            "description": "Recovery not found",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordConfirmRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/v1/identities/reset-password-init": {
+      "post": {
+        "summary": "ResetPasswordInit begins reset-password process for identity.",
+        "description": "Access: Public\n\nFor email-pass identity should be provided email and if identity with related\nemail exists confirmation code for recovery process will be sent to that email.\nIn email will be stored link with comfirm_id (i) and verifycation code (p) inside\nquery parameters of the link. It should leads the user to the web page where the\nuser will see input for `new password`.\n\nThis end-point will always return 200 OK for failed and success requests. This is\nnecessary to prevent database brute-forcing.",
+        "operationId": "UserService_ResetPasswordInit",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordInitResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1Empty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordInitRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/v1/identities/retry-confirm": {
       "post": {
         "summary": "RetryConfirm resends confirmation code.",
-        "description": "Access: Public\n\nThis end-point is utilized when confirmation code is expired and \nuser wants to reissue new confirmation code.\n\nFor email-pass identity should be provided email and if identity with related \nemail exists confirmation will be sent to that email.",
+        "description": "Access: Public\n\nThis end-point is utilized when confirmation code is expired and\nuser wants to reissue new confirmation code.\n\nFor email-pass identity should be provided email and if identity with related\nemail exists confirmation will be sent to that email.",
         "operationId": "UserService_RetryConfirm",
         "responses": {
           "200": {
@@ -368,6 +454,34 @@
           "type": "string"
         }
       }
+    },
+    "v1ResetPasswordConfirmRequest": {
+      "type": "object",
+      "properties": {
+        "confirm_id": {
+          "type": "string"
+        },
+        "verifycation": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ResetPasswordConfirmResponse": {
+      "type": "object"
+    },
+    "v1ResetPasswordInitRequest": {
+      "type": "object",
+      "properties": {
+        "ident": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ResetPasswordInitResponse": {
+      "type": "object"
     },
     "v1RetryConfirmRequest": {
       "type": "object",

@@ -47,6 +47,25 @@ func (d *DB) DeleteIdent(ctx context.Context, ident string, kind domain.IdentKin
 	return d.execr(ctx, 1, query, ident, kind)
 }
 
+// ReadIdent returns ident by unique ident.
+func (d *DB) ReadIdent(ctx context.Context, ident string) (domain.Ident, error) {
+	var res domain.Ident
+	r, err := d.one(ctx,
+		`SELECT user_id, ident, ident_confirmed, kind, password, created_at, updated_at
+			FROM "idents" WHERE ident = ?`,
+		ident)
+	if err != nil {
+		return res, err
+	}
+
+	var password sql.NullString
+
+	err = E(r.Scan(&res.UserID, &res.Ident, &res.IdentConfirmed, &res.Kind, &password, &res.CreatedAt, &res.UpdatedAt))
+	res.Password = password.String
+
+	return res, err
+}
+
 // IdentKind returns ident by ident and kind.
 func (d *DB) ReadIdentKind(ctx context.Context, ident string, kind domain.IdentKind) (domain.Ident, error) {
 	var res domain.Ident

@@ -7,6 +7,8 @@ import (
 	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
+	"ms-users/app/usecase/reset_password_confirm"
+	"ms-users/app/usecase/reset_password_init"
 	"ms-users/app/usecase/retry_confirm"
 	"ms-users/app/usecase/whoami"
 )
@@ -23,6 +25,8 @@ type Commands struct {
 	AuthEmailPass           auth_emailpass.UseCase
 	Confirm                 confirm.UseCase
 	RetryConfirm            retry_confirm.UseCase
+	ResetPasswordInit       reset_password_init.UseCase
+	ResetPasswordConfirm    reset_password_confirm.UseCase
 }
 
 // Server implements the protobuf interface

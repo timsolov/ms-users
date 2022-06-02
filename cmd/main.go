@@ -19,6 +19,8 @@ import (
 	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
+	"ms-users/app/usecase/reset_password_confirm"
+	"ms-users/app/usecase/reset_password_init"
 	"ms-users/app/usecase/retry_confirm"
 	"ms-users/app/usecase/whoami"
 
@@ -66,7 +68,7 @@ func main() {
 			log,
 			create_emailpass_identity.New(
 				d,
-				cfg.APP.BaseURL,
+				cfg.APP.APIBaseURL,
 				cfg.APP.FromEmail,
 				cfg.APP.FromName,
 				cfg.APP.ConfirmLife,
@@ -81,7 +83,7 @@ func main() {
 	// prepare web/gRPC server handlers
 	createEmailPassIdentityUseCase := create_emailpass_identity.New(
 		d,
-		cfg.APP.BaseURL,
+		cfg.APP.APIBaseURL,
 		cfg.APP.FromEmail,
 		cfg.APP.FromName,
 		cfg.APP.ConfirmLife,
@@ -96,6 +98,14 @@ func main() {
 			AuthEmailPass:           auth_emailpass.New(d, &cfg.TOKEN),
 			Confirm:                 confirm.New(d),
 			RetryConfirm:            retry_confirm.New(d, createEmailPassIdentityUseCase),
+			ResetPasswordInit: reset_password_init.New(
+				d,
+				cfg.APP.WebBaseURL,
+				cfg.APP.FromEmail,
+				cfg.APP.FromName,
+				cfg.APP.ConfirmLife,
+			),
+			ResetPasswordConfirm: reset_password_confirm.New(d),
 		},
 	)
 

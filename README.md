@@ -8,6 +8,12 @@
 - CQRS pattern for usecases;
 - PASETO token;
 
+## Dependancies
+
+- PostgreSQL - OLTP database for storing data;
+- PgQ - PostgreSQL native queue plugin for handling `outbox` pattern;
+- ms-email - service for sending emails;
+
 ## Prometeus metrics
 
 http://0.0.0.0/metric/
@@ -19,14 +25,12 @@ http://0.0.0.0/metric/
 - [x] User's profile
 - [x] Authentication by email-password identity
     - [x] Switch JWT token to PASETO token
-- [ ] Identity recovery process
-    - [ ] Init recovery process end-point
-    - [ ] Confirm recovery process by existing confirmation end-point
-    - [ ] Finish recovery process end-point
+- [x] Identity reset password process
+    - [x] Init reset password process end-point
+    - [x] Confirm reset password process and set new password end-point
 - [ ] JSONSchema configurable profile info
 - [ ] Healthcheck for all dependencies
     - [ ] PostgreSQL
-    - [ ] Redis (it havn't used yet)
 - [ ] Opentelemetry
 - [x] Prometheus
 - [ ] Authentication by Google OAuth 2.0

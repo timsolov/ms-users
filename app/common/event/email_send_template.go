@@ -14,21 +14,15 @@ type SendTemplate struct {
 	Vars     []byte `json:"vars"`     // marshaled json object with variables such as subject, receiver, send, sender_name and others to use in template
 }
 
-func SendEmail_EmailConfirmation(lang, fromEmail, fromName, toEmail, toName, url string) (Event, error) {
-	const tplName = "email-confirmation"
-
+func Email_SendTemplate(tplName, lang, fromEmail, fromName, toEmail, toName string, vars map[string]string) (Event, error) {
 	var ev Event
 
-	type Vars struct {
-		Sender       string `json:"sender"`
-		SenderName   string `json:"sender_name"`
-		Receiver     string `json:"receiver"`
-		ReceiverName string `json:"receiver_name"`
-		URL          string `json:"url"`
-	}
+	vars["sender"] = fromEmail
+	vars["sender_name"] = fromName
+	vars["receiver"] = toEmail
+	vars["receiver_name"] = toName
 
-	vars := Vars{fromEmail, fromName, toEmail, toName, url}
-	encodedVars, err := json.Marshal(&vars)
+	marshaledVars, err := json.Marshal(&vars)
 	if err != nil {
 		return ev, errors.Wrap(err, "encode vars")
 	}
@@ -36,7 +30,7 @@ func SendEmail_EmailConfirmation(lang, fromEmail, fromName, toEmail, toName, url
 	params := SendTemplate{
 		Template: tplName,
 		Language: lang,
-		Vars:     encodedVars,
+		Vars:     marshaledVars,
 	}
 
 	encodedParams, err := json.Marshal(&params)

@@ -60,6 +60,8 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (err error) {
 		return domain.ErrMismatch // 400
 	}
 
+	// TODO: check record expiration
+
 	switch confirm.Kind {
 	case domain.EmailConfirmKind:
 		email, ok := confirm.Vars["email"]

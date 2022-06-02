@@ -3,12 +3,15 @@ package web
 import (
 	"context"
 
+	"ms-users/app/common/logger"
 	"ms-users/app/delivery/web/pb"
 	"ms-users/app/domain"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/confirm"
 	"ms-users/app/usecase/create_emailpass_identity"
 	"ms-users/app/usecase/profile"
+	"ms-users/app/usecase/reset_password_confirm"
+	"ms-users/app/usecase/reset_password_init"
 	"ms-users/app/usecase/retry_confirm"
 	"ms-users/app/usecase/whoami"
 
@@ -136,7 +139,7 @@ func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (
 	return out, OK(ctx)
 }
 
-// Authenticate users by email-pasword.
+// Authenticate users by email-password.
 //
 // Access: any
 //
@@ -200,6 +203,74 @@ usecase:
 	}
 
 	out.UserId = userID.String()
+
+	return out, OK(ctx)
+}
+
+// ResetPasswordInit begins reset-password process for identity.
+//
+// Access: Public
+//
+// For email-pass identity should be provided email and if identity with related
+// email exists confirmation code for recovery process will be sent to that email.
+// In email will be stored link with comfirm_id (i) and verifycation code (p) inside
+// query parameters of the link. It should leads the user to the web page where the
+// user will see input for `new password`.
+//
+// This end-point will always return 200 OK for failed and success requests. This is
+// necessary to prevent database brute-forcing.
+//
+func (s *Server) ResetPasswordInit(ctx context.Context, in *pb.ResetPasswordInitRequest) (*pb.ResetPasswordInitResponse, error) {
+	out := &pb.ResetPasswordInitResponse{}
+
+	ident := in.GetIdent()
+
+	err := s.commands.ResetPasswordInit.Do(ctx, &reset_password_init.Params{Ident: ident})
+	if err != nil {
+		level := logger.ErrorLevel
+		switch errors.Cause(err) {
+		case domain.ErrUnknownIdent:
+			return out, BadRequest(ctx, domain.ErrUnknownIdent)
+		case domain.ErrEmailPassNotFound:
+			level = logger.WarnLevel
+		}
+		s.log.Logf(level, "ResetPasswordInit usecase: %s", err)
+	}
+
+	return out, OK(ctx)
+}
+
+// ResetPasswordConfirm confirm identity recovery process and set new password.
+//
+// Access: Public
+//
+// It's necessary to identify does the user who started recovery process is owner of
+// the identity. So this end-point waits for verification id, code and new password.
+//
+func (s *Server) ResetPasswordConfirm(ctx context.Context, in *pb.ResetPasswordConfirmRequest) (*pb.ResetPasswordConfirmResponse, error) {
+	out := &pb.ResetPasswordConfirmResponse{}
+
+	if stErr := Validate(ctx, in); stErr != nil {
+		return out, stErr
+	}
+
+	confirmID, err := uuid.Parse(in.GetConfirmId())
+	if err != nil {
+		return out, BadRequest(ctx, err)
+	}
+
+	err = s.commands.ResetPasswordConfirm.Do(ctx, &reset_password_confirm.Params{
+		ConfirmID:    confirmID,
+		Verification: in.GetVerifycation(),
+		NewPassword:  in.GetPassword(),
+	})
+	if err != nil {
+		switch errors.Cause(err) {
+		case domain.ErrNotFound, domain.ErrExpired, domain.ErrMismatch:
+			return out, BadRequest(ctx, err)
+		}
+		return out, Internal(ctx, s.log, "ResetPasswordConfirm usecase: %s", err)
+	}
 
 	return out, OK(ctx)
 }

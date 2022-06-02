@@ -65,6 +65,7 @@ func (d *DB) ReadConfirm(ctx context.Context, confirmID uuid.UUID) (confirm doma
 	return confirm, nil
 }
 
+// DelConfirm deletes confirm record.
 func (d *DB) DelConfirm(ctx context.Context, confirmID uuid.UUID) (err error) {
 	return E(d.execr(ctx, 1, `DELETE FROM confirms WHERE confirm_id = ?`, confirmID))
 }

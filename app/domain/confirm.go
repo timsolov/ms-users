@@ -13,8 +13,9 @@ import (
 type ConfirmKind int
 
 const (
-	UnknownConfirmKind = 0
-	EmailConfirmKind   = 1
+	UnknownConfirmKind            = 0
+	EmailConfirmKind              = 1
+	ResetEmailPasswordConfirmKind = 2
 )
 
 // Confirm describes confirm body

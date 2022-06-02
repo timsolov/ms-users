@@ -27,7 +27,8 @@ type Config struct {
 // APP describes
 type APP struct {
 	PrintConfig bool          `env:"PRINT_CONFIG"`
-	BaseURL     string        `env:"BASE_URL,required"`
+	APIBaseURL  string        `env:"API_BASE_URL,required"`
+	WebBaseURL  string        `env:"WEB_BASE_URL,required"`
 	FromEmail   string        `env:"FROM_EMAIL" envDefault:"test@example.org"`
 	FromName    string        `env:"FROM_NAME" envDefault:"Users App"`
 	ConfirmLife time.Duration `env:"CONFIRM_LIFE" envDefault:"1h"`

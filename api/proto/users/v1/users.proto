@@ -34,19 +34,19 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     security: {
       key: "Bearer"
       value: {
-          type: TYPE_API_KEY
-          in: IN_HEADER
-          name: "Authorization"
-          description: "Authentication token, prefixed by Bearer. Example: `Authentication: Bearer <token>`."
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+        description: "Authentication token, prefixed by Bearer. Example: `Authentication: Bearer <token>`."
       }
     }
     security: {
       key: "Cookie"
       value: {
-          type: TYPE_API_KEY
-          in: IN_HEADER
-          name: "Cookie"
-          description: "Authentication token in cookie field access_token. Example: `Cookie: access_token=<token>`"
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Cookie"
+        description: "Authentication token in cookie field access_token. Example: `Cookie: access_token=<token>`"
       }
     }
   }
@@ -108,7 +108,7 @@ service UserService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       responses: {
         key: "401"
-        value: { 
+        value: {
           description: "Unauthorized request"
           schema: { json_schema: { ref: ".users.v1.Empty" } }
         }
@@ -120,10 +120,10 @@ service UserService {
   //
   // Access: Public
   //
-  // This end-point is utilized when confirmation code is expired and 
+  // This end-point is utilized when confirmation code is expired and
   // user wants to reissue new confirmation code.
   //
-  // For email-pass identity should be provided email and if identity with related 
+  // For email-pass identity should be provided email and if identity with related
   // email exists confirmation will be sent to that email.
   //
   rpc RetryConfirm(RetryConfirmRequest) returns (RetryConfirmResponse) {
@@ -134,9 +134,52 @@ service UserService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       responses: {
         key: "204"
-        value: { 
+        value: {
           description: "Identity not found"
-          schema: { json_schema: { ref: ".users.v1.Empty" }}
+          schema: { json_schema: { ref: ".users.v1.Empty" } }
+        }
+      }
+    };
+  }
+
+  // ResetPasswordInit begins reset-password process for identity.
+  //
+  // Access: Public
+  //
+  // For email-pass identity should be provided email and if identity with related
+  // email exists confirmation code for recovery process will be sent to that email.
+  // In email will be stored link with comfirm_id (i) and verifycation code (p) inside
+  // query parameters of the link. It should leads the user to the web page where the
+  // user will see input for `new password`.
+  //
+  // This end-point will always return 200 OK for failed and success requests. This is
+  // necessary to prevent database brute-forcing.
+  //
+  rpc ResetPasswordInit(ResetPasswordInitRequest) returns (ResetPasswordInitResponse) {
+    option (google.api.http) = {
+      post: "/v1/identities/reset-password-init"
+      body: "*"
+    };
+  }
+
+  // ResetPasswordConfirm confirm identity recovery process and set new password.
+  //
+  // Access: Public
+  //
+  // It's necessary to identify does the user who started recovery process is owner of
+  // the identity. So this end-point waits for verification id, code and new password.
+  //
+  rpc ResetPasswordConfirm(ResetPasswordConfirmRequest) returns (ResetPasswordConfirmResponse) {
+    option (google.api.http) = {
+      post: "/v1/identities/reset-password-confirm"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {
+        key: "204"
+        value: {
+          description: "Recovery not found"
+          schema: { json_schema: { ref: ".users.v1.Empty" } }
         }
       }
     };
@@ -175,9 +218,9 @@ service UserService {
       }
       responses: {
         key: "401"
-        value: { 
+        value: {
           description: "Unauthorized request"
-          schema: { json_schema: { ref: ".users.v1.Empty" }}
+          schema: { json_schema: { ref: ".users.v1.Empty" } }
         }
       }
     };
@@ -225,6 +268,24 @@ message RetryConfirmRequest {
 }
 
 message RetryConfirmResponse {}
+
+// ResetPasswordInit
+
+message ResetPasswordInitRequest {
+  string ident = 1 [(tagger.tags) = "validate:\"required,min=6,max=256\""];
+}
+
+message ResetPasswordInitResponse {}
+
+// ResetPasswordConfirm
+
+message ResetPasswordConfirmRequest {
+  string confirm_id   = 1 [(tagger.tags) = "validate:\"required,uuid\""];
+  string verifycation = 2 [(tagger.tags) = "validate:\"required,min=6,max=256\""];
+  string password     = 3 [(tagger.tags) = "validate:\"required,min=8,max=50\""];
+}
+
+message ResetPasswordConfirmResponse {}
 
 // Profile
 
