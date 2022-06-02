@@ -6,6 +6,7 @@ import (
 	"ms-users/app/common/event"
 	"ms-users/app/common/password"
 	"ms-users/app/domain"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -55,12 +56,15 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (err error) {
 		return errors.Wrap(err, "read confirm record from db") // 400 - not found. 500 - other
 	}
 
+	// check expiration
+	if confirm.ValidTill.Before(time.Now()) {
+		return domain.ErrExpired // 400
+	}
+
 	// check does public password is same to stored encrypted
 	if !password.Verify(confirm.Password, confirmPublic.Password) { // not same
 		return domain.ErrMismatch // 400
 	}
-
-	// TODO: check record expiration
 
 	switch confirm.Kind {
 	case domain.EmailConfirmKind:

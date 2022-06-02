@@ -97,7 +97,7 @@ func (s *Server) Confirm(ctx context.Context, in *pb.ConfirmRequest) (out *pb.Co
 	})
 	if err != nil {
 		switch errors.Cause(err) {
-		case domain.ErrNotFound, domain.ErrMismatch:
+		case domain.ErrNotFound, domain.ErrMismatch, domain.ErrExpired:
 			return out, BadRequest(ctx, err)
 		default:
 			return out, Internal(ctx, s.log, "Confirm usecase: %s", err)
