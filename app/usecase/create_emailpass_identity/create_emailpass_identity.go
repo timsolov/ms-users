@@ -12,6 +12,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	confirmEmailTemplateName = "confirm-registration-email-pass"
+)
+
 // Repository describes repository contract
 type Repository interface {
 	// CreateUserAggregate creates new ident record with user record.
@@ -129,13 +133,16 @@ func (uc UseCase) PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email
 	// prepare event email.SendTemplate
 	toEmail := email
 	toName := fmt.Sprintf("%s %s", firstName, lastName)
-	confirmEmail, err = event.SendEmail_EmailConfirmation(
+	confirmEmail, err = event.Email_SendTemplate(
+		confirmEmailTemplateName,
 		lang, // TODO: en language should be user's language not constant
 		uc.fromEmail,
 		uc.fromName,
 		toEmail,
 		toName,
-		url,
+		map[string]string{
+			"url": url,
+		},
 	)
 	if err != nil {
 		err = errors.Wrap(err, "prepare event for sending email-pass confirmation")
