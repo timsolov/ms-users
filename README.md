@@ -21,13 +21,14 @@ http://0.0.0.0/metric/
 ## TODO
 - [x] Create profile with email-password identity
 - [x] Confirmation of email-password identity
-- [x] Repeat email confirmaion of email-password identity
+- [x] Repeat email confirmation of email-password identity
 - [x] User's profile
 - [x] Authentication by email-password identity
     - [x] Switch JWT token to PASETO token
 - [x] Identity reset password process
     - [x] Init reset password process end-point
     - [x] Confirm reset password process and set new password end-point
+- [x] Timeout for http handlers
 - [ ] JSONSchema configurable profile info
 - [ ] Healthcheck for all dependencies
     - [ ] PostgreSQL

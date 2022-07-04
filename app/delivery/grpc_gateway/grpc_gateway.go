@@ -21,9 +21,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// routes
 const (
 	openApiPath    = "/swagger/"
 	prometheusPath = "/metric/"
+)
+
+// headers
+const (
+	grpcTimeout = "Grpc-Timeout"
 )
 
 // RegisterServiceHandlerFunc func to register gRPC service handler.
@@ -31,7 +37,7 @@ type RegisterServiceHandlerFunc func(ctx context.Context, mux *runtime.ServeMux,
 
 // Run runs the gRPC-Gateway on the gatewayAddr using gprcClient connection
 // as underlying gRPC client connection to gRPC server started before.
-func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, services []RegisterServiceHandlerFunc) chan error {
+func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr, httpTimeout string, services []RegisterServiceHandlerFunc) chan error {
 	errCh := make(chan error, 1)
 
 	// establish connection to gRPC-server
@@ -79,6 +85,8 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, s
 	gwServer := &http.Server{
 		Addr: gatewayAddr,
 		Handler: loggerMw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Header.Set(grpcTimeout, httpTimeout)
+
 			if strings.HasPrefix(r.URL.Path, openApiPath) {
 				http.StripPrefix(openApiPath, oa).ServeHTTP(w, r)
 				return

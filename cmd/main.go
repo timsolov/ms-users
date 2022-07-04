@@ -125,6 +125,7 @@ func main() {
 		log,
 		cfg.HTTP.Addr(), // listen incoming host:port for rest api
 		cfg.GRPC.Addr(), // connect to gRPC server host:port
+		cfg.HTTP.Timeout,
 		[]grpc_gateway.RegisterServiceHandlerFunc{
 			pb.RegisterUserServiceHandler,
 		},
