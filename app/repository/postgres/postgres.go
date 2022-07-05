@@ -12,12 +12,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-const _defaultReconnectTimeout = time.Second
+const (
+	_defaultConnectTimeout   = time.Second
+	_defaultReconnectTimeout = time.Second
+)
 
 // DB describes
 type DB struct {
 	db                         *sqlx.DB
 	tx                         *sqlx.Tx
+	connectTimeout             time.Duration
 	reconnectTimeout           time.Duration
 	maxOpenConns, maxIdleConns int
 	openLifeTime, idleLifeTime time.Duration
@@ -25,6 +29,12 @@ type DB struct {
 }
 
 type Option func(*DB)
+
+func SetConnectTimeout(t time.Duration) Option {
+	return func(d *DB) {
+		d.connectTimeout = t
+	}
+}
 
 func SetReconnectTimeout(t time.Duration) Option {
 	return func(d *DB) {
@@ -53,14 +63,11 @@ func SetLogger(log logger.Logger) Option {
 }
 
 func New(ctx context.Context, dsn string, opts ...Option) (*DB, error) {
-	d := &DB{}
+	d := &DB{
+		connectTimeout: _defaultConnectTimeout,
+	}
 	for _, opt := range opts {
 		opt(d)
-	}
-
-	reconnectTimeout := _defaultReconnectTimeout
-	if d.reconnectTimeout > 0 {
-		reconnectTimeout = d.reconnectTimeout
 	}
 
 	var (
@@ -68,20 +75,12 @@ func New(ctx context.Context, dsn string, opts ...Option) (*DB, error) {
 		err error
 	)
 
-	for {
-		db, err = sqlx.ConnectContext(ctx, "pgx", dsn)
-		if err != nil {
-			d.errorf(err, "can't connect to DB: %s", dsn)
-			d.infof("wait %s", reconnectTimeout)
+	ctx, cancel := context.WithTimeout(ctx, d.connectTimeout)
+	defer cancel()
 
-			select {
-			case <-ctx.Done():
-				return nil, err
-			case <-time.After(reconnectTimeout):
-			}
-		} else {
-			break
-		}
+	db, err = sqlx.ConnectContext(ctx, "pgx", dsn)
+	if err != nil {
+		return nil, errors.Wrapf(err, "can't connect to DB: %s", dsn)
 	}
 
 	d.db = db
