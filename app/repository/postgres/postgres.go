@@ -64,7 +64,8 @@ func SetLogger(log logger.Logger) Option {
 
 func New(ctx context.Context, dsn string, opts ...Option) (*DB, error) {
 	d := &DB{
-		connectTimeout: _defaultConnectTimeout,
+		connectTimeout:   _defaultConnectTimeout,
+		reconnectTimeout: _defaultReconnectTimeout,
 	}
 	for _, opt := range opts {
 		opt(d)

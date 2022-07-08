@@ -5,17 +5,8 @@ import (
 	"time"
 
 	"ms-users/app/common/logger"
+	"ms-users/app/common/rw"
 )
-
-type responseWriter struct {
-	http.ResponseWriter
-	code int
-}
-
-func (w *responseWriter) WriteHeader(statusCode int) {
-	w.code = statusCode
-	w.ResponseWriter.WriteHeader(statusCode)
-}
 
 func LogRequest(log logger.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -23,15 +14,15 @@ func LogRequest(log logger.Logger) func(next http.Handler) http.Handler {
 			const healthcheck = "/healthcheck"
 
 			started := time.Now()
-			rw := &responseWriter{w, 0}
+			rwCustom := &rw.ResponseWriter{ResponseWriter: w}
 
-			next.ServeHTTP(rw, r)
+			next.ServeHTTP(rwCustom, r)
 
 			var level logger.Level
 			switch {
-			case rw.code >= 500: //nolint
+			case rwCustom.Code >= 500: //nolint
 				level = logger.ErrorLevel
-			case rw.code >= 400: //nolint
+			case rwCustom.Code >= 400: //nolint
 				level = logger.WarnLevel
 			case r.RequestURI == healthcheck: // remove healthcheck from logs
 				return
@@ -42,7 +33,7 @@ func LogRequest(log logger.Logger) func(next http.Handler) http.Handler {
 			log.Logf(
 				level,
 				"%d %s %s (%v)",
-				rw.code,
+				rwCustom.Code,
 				r.Method,
 				r.RequestURI,
 				time.Since(started),
