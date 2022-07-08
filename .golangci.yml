@@ -10,8 +10,8 @@ linters-settings:
   gci:
     local-prefixes: github.com/golangci/golangci-lint
   goconst:
-    min-len: 3
-    min-occurrences: 3
+    min-len: 2
+    min-occurrences: 2
   gocritic:
     enabled-tags:
       - diagnostic
@@ -33,6 +33,7 @@ linters-settings:
     # see https://github.com/mgechev/revive#available-rules for details.
     ignore-generated-header: true
     severity: warning
+    confidence: 0
     rules:
       - name: indent-error-flow
         severity: warning
@@ -49,7 +50,7 @@ linters-settings:
         # don't include the "operation" and "assign"
         checks: [argument,case,condition,return]
   govet:
-    check-shadowing: false
+    check-shadowing: true
   lll:
     line-length: 200
     tab-width: 4
@@ -111,6 +112,7 @@ issues:
   exclude-rules:
     - path: '(.+)_test\.go'
       linters:
+        - govet
         - gomnd
         - bodyclose
         - dupl
