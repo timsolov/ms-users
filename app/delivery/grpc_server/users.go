@@ -1,10 +1,10 @@
-package web
+package grpc_server
 
 import (
 	"context"
 
 	"ms-users/app/common/logger"
-	"ms-users/app/delivery/web/pb"
+	"ms-users/app/delivery/grpc_server/pb"
 	"ms-users/app/domain"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/confirm"

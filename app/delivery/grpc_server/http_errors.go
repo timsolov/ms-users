@@ -1,4 +1,4 @@
-package web
+package grpc_server
 
 import (
 	"context"

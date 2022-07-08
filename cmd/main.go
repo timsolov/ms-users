@@ -11,9 +11,9 @@ import (
 	"ms-users/app/conf"
 	"ms-users/app/delivery/cli"
 	"ms-users/app/delivery/grpc_gateway"
+	"ms-users/app/delivery/grpc_listener"
 	"ms-users/app/delivery/grpc_server"
-	"ms-users/app/delivery/web"
-	"ms-users/app/delivery/web/pb"
+	"ms-users/app/delivery/grpc_server/pb"
 	"ms-users/app/repository/postgres"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/confirm"
@@ -88,12 +88,12 @@ func main() {
 		cfg.APP.FromName,
 		cfg.APP.ConfirmLife,
 	)
-	webServer := web.New(log,
-		&web.Queries{
+	grpcServer := grpc_server.New(log,
+		&grpc_server.Queries{
 			Profile: profile.New(d),
 			Whoami:  whoami.New(d, &cfg.TOKEN),
 		},
-		&web.Commands{
+		&grpc_server.Commands{
 			CreateEmailPassIdentity: createEmailPassIdentityUseCase,
 			AuthEmailPass:           auth_emailpass.New(d, &cfg.TOKEN),
 			Confirm:                 confirm.New(d),
@@ -110,12 +110,12 @@ func main() {
 	)
 
 	// run gRPC server
-	grpcErr := grpc_server.Run(
+	grpcErr := grpc_listener.Run(
 		ctx,
 		log,
 		cfg.GRPC.Addr(), // listen incoming host:port for gRPC server
 		func(s grpc.ServiceRegistrar) {
-			pb.RegisterUserServiceServer(s, webServer)
+			pb.RegisterUserServiceServer(s, grpcServer)
 		},
 	)
 
