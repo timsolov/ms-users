@@ -242,12 +242,6 @@
               "$ref": "#/definitions/v1RetryConfirmResponse"
             }
           },
-          "204": {
-            "description": "Identity not found",
-            "schema": {
-              "$ref": "#/definitions/v1Empty"
-            }
-          },
           "400": {
             "description": "Validation error",
             "schema": {

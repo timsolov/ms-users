@@ -128,8 +128,8 @@ func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (
 	switch errors.Cause(err) {
 	case nil:
 		// pass
-	case domain.ErrEmailPassNotFound: // 204
-		return out, NoContent(ctx, err)
+	case domain.ErrEmailPassNotFound: // 200
+		// pass
 	case domain.ErrUnknownIdent, domain.ErrIdentityConfirmed: // 400
 		return out, BadRequest(ctx, err)
 	default:

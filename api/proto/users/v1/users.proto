@@ -131,15 +131,6 @@ service UserService {
       post: "/v1/identities/retry-confirm"
       body: "*"
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      responses: {
-        key: "204"
-        value: {
-          description: "Identity not found"
-          schema: { json_schema: { ref: ".users.v1.Empty" } }
-        }
-      }
-    };
   }
 
   // ResetPasswordInit begins reset-password process for identity.
