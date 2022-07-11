@@ -88,12 +88,24 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (profileID uuid.UUID, err
 		Idents: []domain.Ident{ident},
 	}
 
-	confirmRecord, confirmEmail, err := uc.PrepareConfirmRecordAndConfirmEmail(cmd.FirstName, cmd.LastName, cmd.Email, "en")
+	confirmRecord, err := uc.PrepareConfirmEmailRecord(cmd.Email)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, errors.Wrap(err, "prepare confirm email record") // 500
 	}
 
-	err = uc.repo.CreateUserAggregate(ctx, &ua, &confirmRecord, []event.Event{confirmEmail})
+	// encode to json object which encoded by base64
+	code, err := confirmRecord.ToBase64JSON()
+	if err != nil {
+		err = errors.Wrap(err, "encode confirm struct to base64") // 500
+		return
+	}
+
+	confirmEmailEvent, err := uc.PrepareConfirmEmailEvent(cmd.FirstName, cmd.LastName, cmd.Email, "en", code)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "prepare confirm email event") // 500
+	}
+
+	err = uc.repo.CreateUserAggregate(ctx, &ua, &confirmRecord, []event.Event{confirmEmailEvent})
 	if err != nil {
 		if errors.Cause(err) == domain.ErrNotUnique {
 			err = domain.ErrIdentityDuplicated // 400
@@ -104,10 +116,11 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (profileID uuid.UUID, err
 	return user.UserID, nil
 }
 
-func (uc UseCase) PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error) {
+// PrepareConfirmEmailRecord creates instance of Confirm struct for confirming email.
+func (uc UseCase) PrepareConfirmEmailRecord(email string) (confirm domain.Confirm, err error) {
 	// prepare variables for email sending
 	confirmPassword := uuid.New().String()
-	confirmRecord, err = domain.NewConfirm(
+	confirm, err = domain.NewConfirm(
 		domain.EmailConfirmKind,
 		confirmPassword,
 		uc.confirmLife,
@@ -115,25 +128,19 @@ func (uc UseCase) PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email
 			"email": email,
 		},
 	)
-	if err != nil {
-		err = errors.Wrap(err, "create new confirm struct")
-		return
-	}
 
-	// encode to base64
-	confirmB64, err := confirmRecord.ToBase64()
-	if err != nil {
-		err = errors.Wrap(err, "encode confirm struct to base64")
-		return
-	}
+	return
+}
 
+// PrepareConfirmEmailEvent creates instance of Event for sending confirmation email.
+func (uc UseCase) PrepareConfirmEmailEvent(firstName, lastName, email, lang, code string) (confirmEmail event.Event, err error) {
 	// prepare url
-	url := fmt.Sprintf("%s/confirm/%s", uc.baseURL, confirmB64)
+	url := fmt.Sprintf("%s/confirm/%s", uc.baseURL, code)
 
 	// prepare event email.SendTemplate
 	toEmail := email
 	toName := fmt.Sprintf("%s %s", firstName, lastName)
-	confirmEmail, err = event.Email_SendTemplate(
+	confirmEmail, err = event.EmailSendTemplate(
 		confirmEmailTemplateName,
 		lang, // TODO: en language should be user's language not constant
 		uc.fromEmail,
@@ -149,5 +156,5 @@ func (uc UseCase) PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email
 		return
 	}
 
-	return confirmRecord, confirmEmail, err
+	return confirmEmail, err
 }

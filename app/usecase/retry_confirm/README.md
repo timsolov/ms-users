@@ -1,6 +1,8 @@
 # Retry to send confirmation email for new user
 
 This usecase is useful when user wants to resend confirmation email on registration process.
+Also this usecase depends on `create_emailpass_identity` usecase because repeats sending email
+confirmation of recently created identity.
 
 ## TODO
 - Rate limit for new requests

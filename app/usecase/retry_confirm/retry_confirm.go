@@ -18,7 +18,10 @@ var (
 
 // CreateEmailPassIdentityUseCase usecase with necessary method
 type CreateEmailPassIdentityUseCase interface {
-	PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error)
+	// PrepareConfirmEmailRecord creates instance of Confirm struct for confirming email.
+	PrepareConfirmEmailRecord(email string) (confirm domain.Confirm, err error)
+	// PrepareConfirmEmailEvent creates instance of Event for sending confirmation email.
+	PrepareConfirmEmailEvent(firstName, lastName, email, lang, code string) (confirmEmail event.Event, err error)
 }
 
 // Repository describes repository contract
@@ -94,12 +97,24 @@ func (uc *UseCase) retryEmailPassConfirm(ctx context.Context, email string) erro
 		return fmt.Errorf("first_name or last_name is empty") // 500
 	}
 
-	confirmRecord, confirmEmail, err := uc.emailPass.PrepareConfirmRecordAndConfirmEmail(firstName, lastName, email, "en")
+	confirmRecord, err := uc.emailPass.PrepareConfirmEmailRecord(email)
 	if err != nil {
-		return errors.Wrap(err, "prepare confirm record and confirm email event") // 500
+		return errors.Wrap(err, "prepare confirm email record") // 500
 	}
 
-	err = uc.repo.CreateConfirm(ctx, &confirmRecord, event.List{confirmEmail})
+	// encode to json object which encoded by base64
+	code, err := confirmRecord.ToBase64JSON()
+	if err != nil {
+		return errors.Wrap(err, "encode confirm struct to base64") // 500
+	}
+
+	confirmEmailEvent, err := uc.emailPass.PrepareConfirmEmailEvent(firstName, lastName, email, "en", code)
+	if err != nil {
+		return errors.Wrap(err, "prepare confirm email event") // 500
+	}
+
+	// create confirm record in db and send an event to email service
+	err = uc.repo.CreateConfirm(ctx, &confirmRecord, event.List{confirmEmailEvent})
 	if err != nil {
 		return errors.Wrap(err, "create confirm record in db") // 500
 	}

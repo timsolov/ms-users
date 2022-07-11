@@ -14,7 +14,7 @@ type SendTemplate struct {
 	Vars     []byte `json:"vars"`     // marshaled json object with variables such as subject, receiver, send, sender_name and others to use in template
 }
 
-func Email_SendTemplate(tplName, lang, fromEmail, fromName, toEmail, toName string, vars map[string]string) (Event, error) {
+func EmailSendTemplate(tplName, lang, fromEmail, fromName, toEmail, toName string, vars map[string]string) (Event, error) {
 	var ev Event
 
 	vars["sender"] = fromEmail

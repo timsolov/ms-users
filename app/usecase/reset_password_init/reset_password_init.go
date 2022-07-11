@@ -140,7 +140,7 @@ func (uc UseCase) prepareConfirmRecordWithEvent(_ context.Context, email, firstN
 	// prepare event email.SendTemplate
 	toEmail := email
 	toName := fmt.Sprintf("%s %s", firstName, lastName)
-	confirmEmail, err = event.Email_SendTemplate(
+	confirmEmail, err = event.EmailSendTemplate(
 		resetEmailPasswordTpl,
 		lang, // TODO: en language should be user's language not constant
 		uc.fromEmail,

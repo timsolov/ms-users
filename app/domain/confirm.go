@@ -29,6 +29,7 @@ type Confirm struct {
 	ValidTill         time.Time         `json:"-"`
 }
 
+// NewConfirm creates instance of Confirm struct and fill it with necessary fields.
 func NewConfirm(kind ConfirmKind, plainPassword string, life time.Duration, vars map[string]string) (confirm Confirm, err error) {
 	encryptedPassword, err := password.Encrypt(plainPassword)
 	if err != nil {
@@ -45,7 +46,24 @@ func NewConfirm(kind ConfirmKind, plainPassword string, life time.Duration, vars
 	return
 }
 
-func (c *Confirm) ToBase64() (encoded string, err error) {
+// NewConfirmEmail creates instance of Confirm struct for confirming email.
+func NewConfirmEmail(email string, confirmLife time.Duration) (confirm Confirm, err error) {
+	// prepare variables for email sending
+	confirmPassword := uuid.New().String()
+	confirm, err = NewConfirm(
+		EmailConfirmKind,
+		confirmPassword,
+		confirmLife,
+		map[string]string{ /* vars */
+			"email": email,
+		},
+	)
+
+	return
+}
+
+// ToBase64JSON converts Confirm struct to JSON object and then it encodes to base64 string.
+func (c *Confirm) ToBase64JSON() (encoded string, err error) {
 	confirmJSON, err := json.Marshal(c)
 	if err != nil {
 		err = errors.Wrap(err, "marshal confirm struct")
