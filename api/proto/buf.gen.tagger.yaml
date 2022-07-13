@@ -4,4 +4,4 @@ plugins:
     out: .
     opt:
       - paths=import
-      - outdir=app/delivery/web/pb
+      - outdir=app/delivery/grpc_server/pb
