@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCreateEmailPassIdentityCmd(log logger.Logger, uc create_emailpass_identity.UseCase) *cobra.Command {
+func NewCreateEmailPassIdentityCmd(log logger.Logger, uc *create_emailpass_identity.UseCase) *cobra.Command {
 	const (
 		exactArgs    = 4
 		emailIdx     = 0
@@ -25,8 +25,7 @@ func NewCreateEmailPassIdentityCmd(log logger.Logger, uc create_emailpass_identi
 				Email:          args[emailIdx],
 				EmailConfirmed: true,
 				Password:       args[passIdx],
-				FirstName:      args[firstNameIdx],
-				LastName:       args[lastNameIdx],
+				// TODO: Profile: ,
 			})
 			if err != nil {
 				log.Fatalf("create-email-pass-identity error: %v", err)

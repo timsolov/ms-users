@@ -26,13 +26,6 @@ func (u *User) MarshalProfile(v interface{}) error {
 	return err
 }
 
-// V1Profile describes view "v1"
-type V1Profile struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-}
-
 // UserAggregate describes user aggregate model.
 type UserAggregate struct {
 	User

@@ -14,13 +14,13 @@ type SendTemplate struct {
 	Vars     []byte `json:"vars"`     // marshaled json object with variables such as subject, receiver, send, sender_name and others to use in template
 }
 
-func EmailSendTemplate(tplName, lang, fromEmail, fromName, toEmail, toName string, vars map[string]string) (Event, error) {
+func EmailSendTemplate(tplName, lang, fromEmail, fromName, toEmail string, vars map[string]any) (Event, error) {
 	var ev Event
 
 	vars["sender"] = fromEmail
 	vars["sender_name"] = fromName
 	vars["receiver"] = toEmail
-	vars["receiver_name"] = toName
+	vars["receiver_name"] = ""
 
 	marshaledVars, err := json.Marshal(&vars)
 	if err != nil {

@@ -29,7 +29,7 @@ http://0.0.0.0/metric/
     - [x] Init reset password process end-point
     - [x] Confirm reset password process and set new password end-point
 - [x] Timeout for http handlers
-- [ ] JSONSchema configurable profile info
+- [x] JSONSchema configurable profile info
 - [ ] Healthcheck for all dependencies
     - [ ] PostgreSQL
     - [ ] ms-emails

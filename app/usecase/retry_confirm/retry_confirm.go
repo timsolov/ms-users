@@ -2,14 +2,12 @@ package retry_confirm
 
 import (
 	"context"
-	"fmt"
 	"ms-users/app/common/event"
 	"ms-users/app/domain"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/tidwall/gjson"
 )
 
 var (
@@ -21,15 +19,15 @@ type CreateEmailPassIdentityUseCase interface {
 	// PrepareConfirmEmailRecord creates instance of Confirm struct for confirming email.
 	PrepareConfirmEmailRecord(email string) (confirm domain.Confirm, err error)
 	// PrepareConfirmEmailEvent creates instance of Event for sending confirmation email.
-	PrepareConfirmEmailEvent(firstName, lastName, email, lang, code string) (confirmEmail event.Event, err error)
+	PrepareConfirmEmailEvent(email, lang, code string, profile []byte) (confirmEmail event.Event, err error)
 }
 
 // Repository describes repository contract
 type Repository interface {
 	// ReadIdentKind returns ident by ident and kind.
 	ReadIdentKind(ctx context.Context, ident string, kind domain.IdentKind) (domain.Ident, error)
-	// Profile returns profile record
-	Profile(ctx context.Context, userID uuid.UUID) (domain.User, error)
+	// User returns profile record
+	User(ctx context.Context, userID uuid.UUID) (domain.User, error)
 	// CreateConfirm creates new confirm record
 	CreateConfirm(ctx context.Context, m *domain.Confirm, events []event.Event) error
 }
@@ -81,22 +79,18 @@ func (uc *UseCase) retryEmailPassConfirm(ctx context.Context, email string) erro
 		return errors.Wrap(err, "request email-pass ident from db") // 500 - otherwise
 	}
 
+	// don't do retry for confirmed identities
 	if ident.IdentConfirmed {
 		return domain.ErrIdentityConfirmed // 400
 	}
 
 	// find user profile
-	profile, err := uc.repo.Profile(ctx, ident.UserID)
+	user, err := uc.repo.User(ctx, ident.UserID)
 	if err != nil {
 		return errors.Wrap(err, "request user profile from db") // 500
 	}
 
-	firstName := gjson.GetBytes(profile.Profile, "first_name").String()
-	lastName := gjson.GetBytes(profile.Profile, "last_name").String()
-	if firstName == "" || lastName == "" {
-		return fmt.Errorf("first_name or last_name is empty") // 500
-	}
-
+	// prepare new confirm record struct
 	confirmRecord, err := uc.emailPass.PrepareConfirmEmailRecord(email)
 	if err != nil {
 		return errors.Wrap(err, "prepare confirm email record") // 500
@@ -108,7 +102,8 @@ func (uc *UseCase) retryEmailPassConfirm(ctx context.Context, email string) erro
 		return errors.Wrap(err, "encode confirm struct to base64") // 500
 	}
 
-	confirmEmailEvent, err := uc.emailPass.PrepareConfirmEmailEvent(firstName, lastName, email, "en", code)
+	// prepare event for sending new email for confirmation
+	confirmEmailEvent, err := uc.emailPass.PrepareConfirmEmailEvent(email, "en", code, user.Profile)
 	if err != nil {
 		return errors.Wrap(err, "prepare confirm email event") // 500
 	}

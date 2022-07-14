@@ -161,3 +161,47 @@ func TestDB_UpdIdent(t *testing.T) {
 		})
 	}
 }
+
+func TestDB_IdentsByUserID(t *testing.T) {
+	config := conf.New()
+
+	ctx := context.TODO()
+
+	d, err := postgres.New(ctx, config.DB.DSN())
+	assert.NoError(t, err)
+
+	user, clean := NewUser(t, ctx, d)
+	defer clean()
+
+	_, clean = NewIdent(t, ctx, d, user.UserID, domain.EmailPassIdent)
+	defer clean()
+	_, clean = NewIdent(t, ctx, d, user.UserID, domain.EmailPassIdent)
+	defer clean()
+
+	tests := []struct {
+		name    string
+		wantErr error
+		prepare func()
+		check   func(idents []domain.Ident)
+	}{
+		{
+			name:    "ok",
+			wantErr: nil,
+			check: func(idents []domain.Ident) {
+				assert.Len(t, idents, 2)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotIdents, err := d.IdentsByUserID(ctx, user.UserID)
+			if err != tt.wantErr {
+				t.Errorf("DB.IdentsByUserID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.check != nil {
+				tt.check(gotIdents)
+			}
+		})
+	}
+}

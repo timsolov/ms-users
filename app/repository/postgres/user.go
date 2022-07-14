@@ -44,8 +44,8 @@ func (d *DB) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return d.execr(ctx, 1, query, userID)
 }
 
-// Profile returns profile record
-func (d *DB) Profile(ctx context.Context, userID uuid.UUID) (domain.User, error) {
+// User returns profile record
+func (d *DB) User(ctx context.Context, userID uuid.UUID) (domain.User, error) {
 	var user domain.User
 
 	query := "SELECT user_id, view, profile, created_at, updated_at FROM users WHERE user_id = ?"

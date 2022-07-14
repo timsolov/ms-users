@@ -20,7 +20,6 @@ see input for a `new password`.
       "sender": "test@example.org", // sender email
       "sender_name": "Sender Name", // sender name
       "receiver": "new_user@example.org", // email of the new identity
-      "receiver_name": "New User", // full name of the new identity
       // url - is link to the Web page shows field "new password"
       // query i - should be confirm_id
       // query v - should be password for confirm record in db

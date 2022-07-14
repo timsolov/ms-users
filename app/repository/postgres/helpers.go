@@ -47,20 +47,20 @@ func (d *DB) execr(ctx context.Context, rows int64, query string, args ...interf
 	return nil
 }
 
-// func (d *DB) many(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-// 	var (
-// 		r   *sql.Rows
-// 		err error
-// 	)
+func (d *DB) many(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	var (
+		r   *sql.Rows
+		err error
+	)
 
-// 	if d.tx != nil {
-// 		r, err = d.tx.QueryContext(ctx, d.db.Rebind(query), args...)
-// 	} else {
-// 		r, err = d.db.QueryContext(ctx, d.db.Rebind(query), args...)
-// 	}
+	if d.tx != nil {
+		r, err = d.tx.QueryContext(ctx, d.db.Rebind(query), args...)
+	} else {
+		r, err = d.db.QueryContext(ctx, d.db.Rebind(query), args...)
+	}
 
-// 	return r, E(err)
-// }
+	return r, E(err)
+}
 
 // one makes sql query and returns one row from db.
 // It do E(err).

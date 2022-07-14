@@ -17,42 +17,60 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // stub: s *Server pb.UserServiceServer
 
 // Creates new user.
 func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmailPassIdentityRequest) (*pb.CreateEmailPassIdentityResponse, error) {
+	out := &pb.CreateEmailPassIdentityResponse{}
+
 	if stErr := Validate(ctx, in); stErr != nil {
-		return &pb.CreateEmailPassIdentityResponse{}, stErr
+		return out, stErr
+	}
+
+	profileJSON, err := protojson.Marshal(in.Profile)
+	if err != nil {
+		return out, BadRequest(ctx, errors.Wrap(err, "profile"))
 	}
 
 	createUser := create_emailpass_identity.Params{
-		Email:     in.GetEmail(),
-		FirstName: in.GetFirstName(),
-		LastName:  in.GetLastName(),
-		Password:  in.GetPassword(),
+		Email:    in.GetEmail(),
+		Password: in.GetPassword(),
+		Profile:  profileJSON,
 	}
 
 	userID, err := s.commands.CreateEmailPassIdentity.Do(ctx, &createUser)
 	if err != nil {
+		_, isStatus := status.FromError(err)
+		if isStatus {
+			return out, err
+		}
+
 		switch errors.Cause(err) {
 		case domain.ErrIdentityDuplicated:
 			err = BadRequest(ctx, err)
 		default:
 			err = Internal(ctx, s.log, "CreateEmailPassIdentity usecase: %s", err)
 		}
-		return &pb.CreateEmailPassIdentityResponse{}, err
+
+		return out, err
 	}
 
-	return &pb.CreateEmailPassIdentityResponse{
-		UserId: userID.String(),
-	}, OK(ctx)
+	out.UserId = userID.String()
+
+	return out, OK(ctx)
 }
 
 // Profile detail info.
 //
-// Profile returns user detail info.
+// Access: X-User-Id
+//
+// Profile returns profile and identities of user by user_id.
+//
 func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.ProfileResponse, error) {
 	out := &pb.ProfileResponse{}
 
@@ -71,16 +89,27 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 		}
 	}
 
-	var profileView domain.V1Profile
-	err = user.UnmarshalProfile(&profileView)
-	if err != nil {
-		return out, Internal(ctx, s.log, "unmarshaling profile: %s", err)
-	}
-
 	out.UserId = user.UserID.String()
-	out.Email = profileView.Email
-	out.FirstName = profileView.FirstName
-	out.LastName = profileView.LastName
+	out.Profile, err = structpb.NewStruct(nil)
+	if err != nil {
+		return out, Internal(ctx, s.log, "init profile field")
+	}
+	err = protojson.Unmarshal(user.Profile, out.Profile)
+	// err = out.Profile.UnmarshalJSON(user.Profile)
+	if err != nil {
+		return out, Internal(ctx, s.log, "unmarshal profile field from json to proto")
+	}
+	if len(user.Idents) > 0 {
+		out.Idents = make([]*pb.Identity, 0, len(user.Idents))
+		for i := 0; i < len(user.Idents); i++ {
+			ident := &pb.Identity{
+				Ident: user.Idents[i].Ident,
+				Kind:  pb.Identity_Kind(user.Idents[i].Kind),
+			}
+
+			out.Idents = append(out.Idents, ident)
+		}
+	}
 
 	return out, OK(ctx)
 }
@@ -268,4 +297,14 @@ func (s *Server) ResetPasswordConfirm(ctx context.Context, in *pb.ResetPasswordC
 	}
 
 	return out, OK(ctx)
+}
+
+// UpdateProfile updates profile traits.
+//
+// Access: X-User-Id
+//
+// Updates one or multiple profile traits in database.
+//
+func (s *Server) UpdateProfile(_ context.Context, _ *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
+	panic("not implemented") // TODO: Implement
 }

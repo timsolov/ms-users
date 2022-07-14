@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "file://settings/_profile.json",
+    "title": "Profile",
+    "description": "Profile validation",
+    "type": "object",
+    "properties": {
+      "first_name": {
+        "description": "First name",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "last_name": {
+        "description": "Last name",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      }
+    },
+    "required": ["first_name", "last_name"],
+    "additionalProperties": false
+  }

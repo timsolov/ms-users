@@ -21,7 +21,7 @@ type Queries struct {
 
 // Commands describes usecases
 type Commands struct {
-	CreateEmailPassIdentity create_emailpass_identity.UseCase
+	CreateEmailPassIdentity *create_emailpass_identity.UseCase
 	AuthEmailPass           auth_emailpass.UseCase
 	Confirm                 confirm.UseCase
 	RetryConfirm            retry_confirm.UseCase

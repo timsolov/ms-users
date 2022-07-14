@@ -26,8 +26,8 @@ var (
 type Repository interface {
 	// ReadIdentKind returns ident by ident and kind.
 	ReadIdentKind(ctx context.Context, ident string, kind domain.IdentKind) (domain.Ident, error)
-	// Profile returns profile record
-	Profile(ctx context.Context, userID uuid.UUID) (domain.User, error)
+	// User returns profile record
+	User(ctx context.Context, userID uuid.UUID) (domain.User, error)
 	// CreateConfirm creates new confirm record
 	CreateConfirm(ctx context.Context, m *domain.Confirm, events []event.Event) error
 }
@@ -85,7 +85,7 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (err error) {
 	}
 
 	// searching for the user profile
-	profile, err := uc.repo.Profile(ctx, ident.UserID)
+	profile, err := uc.repo.User(ctx, ident.UserID)
 	if err != nil {
 		return errors.Wrap(err, "request user profile from db") // 500
 	}
@@ -117,7 +117,7 @@ func (uc UseCase) Do(ctx context.Context, cmd *Params) (err error) {
 	return nil
 }
 
-func (uc UseCase) prepareConfirmRecordWithEvent(_ context.Context, email, firstName, lastName, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error) {
+func (uc UseCase) prepareConfirmRecordWithEvent(_ context.Context, email, _, _, lang string) (confirmRecord domain.Confirm, confirmEmail event.Event, err error) {
 	const passwordLength = 8
 	// prepare variables for email sending
 	confirmPassword := utils.RandString(passwordLength)
@@ -139,15 +139,13 @@ func (uc UseCase) prepareConfirmRecordWithEvent(_ context.Context, email, firstN
 
 	// prepare event email.SendTemplate
 	toEmail := email
-	toName := fmt.Sprintf("%s %s", firstName, lastName)
 	confirmEmail, err = event.EmailSendTemplate(
 		resetEmailPasswordTpl,
 		lang, // TODO: en language should be user's language not constant
 		uc.fromEmail,
 		uc.fromName,
 		toEmail,
-		toName,
-		map[string]string{
+		map[string]any{
 			"url": url,
 		},
 	)

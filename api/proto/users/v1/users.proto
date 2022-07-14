@@ -4,6 +4,7 @@ package users.v1;
 
 import "google/api/annotations.proto";
 import "google/rpc/status.proto";
+import "google/protobuf/struct.proto";
 // import "google/protobuf/field_mask.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "tagger/tagger.proto";
@@ -182,11 +183,26 @@ service UserService {
   //
   // Access: X-User-Id
   //
-  // Profile returns profile by profile_id.
+  // Profile returns profile and identities of user by user_id.
   //
   rpc Profile(ProfileRequest) returns (ProfileResponse) {
     option (google.api.http) = {
       get: "/v1/profile"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      security: { security_requirement: { key: "X-User-Id" } }
+    };
+  }
+
+  // UpdateProfile updates profile traits.
+  //
+  // Access: X-User-Id
+  //
+  // Updates one or multiple profile traits in database.
+  //
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse) {
+    option (google.api.http) = {
+      put: "/v1/profile"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       security: { security_requirement: { key: "X-User-Id" } }
@@ -225,10 +241,9 @@ message Empty {}
 // CreateEmailPassIdentity
 
 message CreateEmailPassIdentityRequest {
-  string email      = 1 [(tagger.tags) = "validate:\"required,email,min=6,max=256\""];
-  string password   = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\""];
-  string first_name = 3 [(tagger.tags) = "validate:\"min=3,max=20\""];
-  string last_name  = 4 [(tagger.tags) = "validate:\"min=3,max=20\""];
+  string                 email    = 1 [(tagger.tags) = "validate:\"required,email,min=6,max=256\""];
+  string                 password = 2 [(tagger.tags) = "validate:\"required,min=8,max=50\""];
+  google.protobuf.Struct profile  = 3;  // properties for profile (should be validated by jsonschema file provided in settings)
 }
 
 message CreateEmailPassIdentityResponse {
@@ -282,13 +297,31 @@ message ResetPasswordConfirmResponse {}
 
 // Profile
 
+message Identity {
+  enum Kind {
+    UNKNOWN   = 0;
+    EMAILPASS = 1;
+  }
+  string ident = 1;
+  Kind   kind  = 2;
+}
+
 message ProfileRequest {}
 
 message ProfileResponse {
-  string user_id    = 1;
-  string email      = 2;
-  string first_name = 3;
-  string last_name  = 4;
+  string                 user_id = 1;
+  google.protobuf.Struct profile = 2;  // properties for profile
+  repeated Identity      idents  = 3;
+}
+
+// UpdateProfile
+
+message UpdateProfileRequest {
+  string                 user_id = 1 [(tagger.tags) = "validate:\"required,uuid\""];
+  google.protobuf.Struct profile = 2;  // properties for profile (should be validated by jsonschema file provided in settings)
+}
+
+message UpdateProfileResponse {
 }
 
 // Whoami

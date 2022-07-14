@@ -115,3 +115,44 @@ func (d *DB) UpdIdent(ctx context.Context, m *domain.Ident, events event.List) e
 
 	return err
 }
+
+// IdentsByUserID returns idents for given user id.
+// If there is no idents for given user it returns empty list without error.
+func (d *DB) IdentsByUserID(ctx context.Context, userID uuid.UUID) (idents []domain.Ident, err error) {
+	rows, err := d.many(ctx,
+		`SELECT
+			user_id,
+			ident, 
+			ident_confirmed, 
+			kind, 
+			password, 
+			created_at, 
+			updated_at 
+		FROM idents 
+		WHERE user_id = ?`, userID)
+	if err != nil {
+		return nil, E(err)
+	}
+
+	for rows.Next() {
+		var ident domain.Ident
+		var password sql.NullString
+
+		err = rows.Scan(
+			&ident.UserID,
+			&ident.Ident,
+			&ident.IdentConfirmed,
+			&ident.Kind,
+			&password,
+			&ident.CreatedAt,
+			&ident.UpdatedAt,
+		)
+		ident.Password = password.String
+		if err != nil {
+			return nil, E(err)
+		}
+
+		idents = append(idents, ident)
+	}
+	return idents, nil
+}

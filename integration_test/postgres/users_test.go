@@ -2,7 +2,6 @@ package postgres_test
 
 import (
 	"context"
-	"encoding/json"
 	"ms-users/app/domain"
 	"ms-users/app/repository/postgres"
 	"testing"
@@ -10,21 +9,18 @@ import (
 	"github.com/Pallinder/go-randomdata"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/tidwall/sjson"
 )
 
 func NewUser(t *testing.T, ctx context.Context, d *postgres.DB) (user domain.User, clean func()) {
-	p := domain.V1Profile{
-		Email:     randomdata.Email(),
-		FirstName: randomdata.FirstName(randomdata.Male),
-		LastName:  randomdata.LastName(),
-	}
-
-	b, err := json.Marshal(p)
+	b, err := sjson.SetBytes(nil, "first_name", randomdata.FirstName(randomdata.Male))
+	assert.NoError(t, err)
+	b, err = sjson.SetBytes(b, "last_name", randomdata.LastName())
 	assert.NoError(t, err)
 
 	user = domain.User{
 		UserID:  uuid.New(),
-		View:    "v1",
+		View:    "test_fn_ln",
 		Profile: b,
 	}
 

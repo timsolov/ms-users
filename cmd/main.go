@@ -4,9 +4,12 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
+	"ms-users/app/common/jsonschema"
 	"ms-users/app/common/logger"
 	"ms-users/app/conf"
 	"ms-users/app/delivery/cli"
@@ -60,6 +63,15 @@ func main() {
 		return
 	}
 
+	// jsonschema for profile
+	jsonSchema := jsonschema.New([]string{"properties.avatar_url"})
+	err = jsonSchema.Load(ctx, cfg.APP.ProfileJSONSchemaPath)
+	if err != nil {
+		log.Errorf("load jsonschema: %v", err)
+		return
+	}
+	jsonSchemaName := strings.TrimSuffix(filepath.Base(cfg.APP.ProfileJSONSchemaPath), filepath.Ext(cfg.APP.ProfileJSONSchemaPath))
+
 	// cli commands
 	err = cli.Run(
 		ctx,
@@ -72,6 +84,8 @@ func main() {
 				cfg.APP.FromEmail,
 				cfg.APP.FromName,
 				cfg.APP.ConfirmLife,
+				jsonSchema,
+				jsonSchemaName,
 			),
 		),
 	)
@@ -87,6 +101,8 @@ func main() {
 		cfg.APP.FromEmail,
 		cfg.APP.FromName,
 		cfg.APP.ConfirmLife,
+		jsonSchema,
+		jsonSchemaName,
 	)
 	grpcServer := grpc_server.New(log,
 		&grpc_server.Queries{
