@@ -30,6 +30,10 @@ lint:
 	buf lint api/proto
 	golangci-lint run --go=1.17 ./...
 
+.PHONY: sql
+sql: # make sql q="select * from table"
+	docker exec -it ${DB_CONTAINER} psql --host=${DB_HOST} --dbname=${DB_NAME} --username=${DB_USER} --command="${q}"
+
 .PHONY: tools
 tools:
 	go install github.com/golang/mock/mockgen@latest
