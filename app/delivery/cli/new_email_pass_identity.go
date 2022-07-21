@@ -33,7 +33,7 @@ func NewCreateEmailPassIdentityCmd(log logger.Logger, uc *create_emailpass_ident
 				const twoParts = 2
 
 				parts := strings.SplitN(args[i], "=", twoParts)
-				if len(parts) != 2 {
+				if len(parts) != twoParts {
 					continue
 				}
 

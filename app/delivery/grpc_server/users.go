@@ -95,7 +95,6 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 		return out, Internal(ctx, s.log, "init profile field")
 	}
 	err = protojson.Unmarshal(user.Profile, out.Profile)
-	// err = out.Profile.UnmarshalJSON(user.Profile)
 	if err != nil {
 		return out, Internal(ctx, s.log, "unmarshal profile field from json to proto")
 	}

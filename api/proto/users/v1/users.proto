@@ -299,8 +299,8 @@ message ResetPasswordConfirmResponse {}
 
 message Identity {
   enum Kind {
-    UNKNOWN   = 0;
-    EMAILPASS = 1;
+    KIND_UNSPECIFIED = 0;
+    KIND_EMAILPASS   = 1;
   }
   string ident = 1;
   Kind   kind  = 2;

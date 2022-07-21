@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"ms-users/app/common/logger"
 	"ms-users/third_party"
@@ -82,8 +83,10 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr, httpTime
 
 	loggerMw := LogRequest(log)
 
+	const readHeaderTimeout = 300 * time.Millisecond
 	gwServer := &http.Server{
-		Addr: gatewayAddr,
+		ReadHeaderTimeout: readHeaderTimeout,
+		Addr:              gatewayAddr,
 		Handler: loggerMw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			r.Header.Set(grpcTimeout, httpTimeout)
 

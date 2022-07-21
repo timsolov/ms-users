@@ -133,6 +133,9 @@ func (d *DB) IdentsByUserID(ctx context.Context, userID uuid.UUID) (idents []dom
 	if err != nil {
 		return nil, E(err)
 	}
+	if rows.Err() != nil {
+		return nil, E(rows.Err())
+	}
 
 	for rows.Next() {
 		var ident domain.Ident

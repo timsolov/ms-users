@@ -3,8 +3,8 @@ package jsonschema
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -68,7 +68,7 @@ func (s *schema) Load(ctx context.Context, uri string) error {
 		return errors.Wrap(err, "parse url")
 	}
 
-	body, err := ioutil.ReadFile(u.Path)
+	body, err := os.ReadFile(u.Path)
 	if err != nil {
 		return errors.Wrapf(err, "read file from path: %s", u.Path)
 	}
