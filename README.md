@@ -16,7 +16,11 @@
 
 ## Prometeus metrics
 
-http://0.0.0.0/metric/
+Prometeus metrics available on:
+http://$HTTP_HOST:$HTTP_PORT/metric/
+
+Default:
+http://0.0.0.0:11000/metric/
 
 ## TODO
 - [x] Create profile with email-password identity
