@@ -2,15 +2,17 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"ms-users/app/common/event"
 	"ms-users/app/domain"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
-// CreateUser creates new profile record
+// CreateUser creates new user record
 func (d *DB) CreateUser(ctx context.Context, m *domain.User) error {
 	if m.UserID == uuid.Nil {
 		m.UserID = uuid.New()
@@ -31,6 +33,59 @@ func (d *DB) CreateUser(ctx context.Context, m *domain.User) error {
 			INTO "users" (user_id, view, profile, created_at, updated_at)
 			VALUES (?,?,?,?,?)`,
 		m.UserID, m.View, m.Profile, m.CreatedAt, m.UpdatedAt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var (
+	columnsUpdUser       = []string{"view", "profile"}
+	columnsUpdRestricted = []string{"created_at", "updated_at"}
+)
+
+// UpdUser updates user record.
+func (d *DB) UpdUser(ctx context.Context, m *domain.User, columns ...string) error {
+	if m.UserID == uuid.Nil {
+		return fmt.Errorf("user_id: required")
+	}
+
+	if len(columns) == 0 {
+		columns = columnsUpdUser
+	}
+
+	if mcontains(columns, columnsUpdRestricted, atLeastOne) {
+		return fmt.Errorf("restricted columns for update: %v", columnsUpdRestricted)
+	}
+
+	const two = 2
+	conditions := make([]string, 0, len(columns)+two) // +2 because we'll add "created_at" and "user_id"
+	args := make([]any, 0, len(columns)+two)
+
+	conditions = append(conditions, "updated_at=?")
+	args = append(args, time.Now())
+
+	for _, column := range columns {
+		switch column {
+		case "view":
+			conditions = append(conditions, "view=?")
+			args = append(args, m.View)
+		case "profile":
+			conditions = append(conditions, "profile=?")
+			args = append(args, m.Profile)
+		}
+	}
+
+	args = append(args, m.UserID)
+
+	query := fmt.Sprintf(`UPDATE "users" SET %s WHERE user_id = ?`,
+		strings.Join(conditions, ","),
+	)
+
+	err := d.execr(ctx, 1,
+		query,
+		args...)
 	if err != nil {
 		return err
 	}

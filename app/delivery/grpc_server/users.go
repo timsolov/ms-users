@@ -13,6 +13,7 @@ import (
 	"ms-users/app/usecase/reset_password_confirm"
 	"ms-users/app/usecase/reset_password_init"
 	"ms-users/app/usecase/retry_confirm"
+	"ms-users/app/usecase/update_profile"
 	"ms-users/app/usecase/whoami"
 
 	"github.com/google/uuid"
@@ -24,7 +25,16 @@ import (
 
 // stub: s *Server pb.UserServiceServer
 
-// Creates new user.
+// Creates new profile with email-password identity.
+//
+// Access: Public
+//
+// For creating new profile you have to provide:
+// - email (required);
+// - password (required);
+// - first_name (optional);
+// - last_name (optional);
+//
 func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmailPassIdentityRequest) (*pb.CreateEmailPassIdentityResponse, error) {
 	out := &pb.CreateEmailPassIdentityResponse{}
 
@@ -32,7 +42,7 @@ func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmail
 		return out, stErr
 	}
 
-	profileJSON, err := protojson.Marshal(in.Profile)
+	profileJSON, err := in.Profile.MarshalJSON()
 	if err != nil {
 		return out, BadRequest(ctx, errors.Wrap(err, "profile"))
 	}
@@ -115,6 +125,8 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 
 // Confirm universal confirm link
 //
+// Access: Public
+//
 // It's possible to confirm different type of operations.
 //
 func (s *Server) Confirm(ctx context.Context, in *pb.ConfirmRequest) (out *pb.ConfirmResponse, err error) {
@@ -136,6 +148,8 @@ func (s *Server) Confirm(ctx context.Context, in *pb.ConfirmRequest) (out *pb.Co
 }
 
 // RetryConfirm resends confirmation code.
+//
+// Access: Public
 //
 // This end-point is utilized when confirmation code is expired and
 // user wants to reissue new confirmation code.
@@ -169,7 +183,7 @@ func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (
 
 // Authenticate users by email-password.
 //
-// Access: any
+// Access: Public
 //
 func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest) (*pb.AuthEmailPassResponse, error) {
 	out := &pb.AuthEmailPassResponse{}
@@ -194,6 +208,8 @@ func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest)
 }
 
 // Whoami returns user_id by access_token.
+//
+// Access: Bearer or Cookie
 //
 // This end-point considers you have an access_token in Cookie or Authorization header.
 // It's possible to use it in authentication middleware for authenticate users.
@@ -304,6 +320,37 @@ func (s *Server) ResetPasswordConfirm(ctx context.Context, in *pb.ResetPasswordC
 //
 // Updates one or multiple profile traits in database.
 //
-func (s *Server) UpdateProfile(_ context.Context, _ *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
-	panic("not implemented") // TODO: Implement
+func (s *Server) UpdateProfile(ctx context.Context, in *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
+	out := &pb.UpdateProfileResponse{}
+
+	userID, err := XUserId(ctx)
+	if err != nil {
+		return nil, Unauthorized(ctx)
+	}
+
+	if stErr := Validate(ctx, in); stErr != nil {
+		return out, stErr
+	}
+
+	profileJSON, err := in.Profile.MarshalJSON()
+	if err != nil {
+		return out, BadRequest(ctx, errors.Wrap(err, "profile"))
+	}
+
+	err = s.commands.UpdateProfile.Do(ctx, &update_profile.Params{
+		UserID:  userID,
+		Profile: profileJSON,
+	})
+	if err != nil {
+		_, isStatus := status.FromError(err)
+		if isStatus {
+			return out, err
+		}
+
+		err = Internal(ctx, s.log, "UpdateProfile usecase: %s", err)
+
+		return out, err
+	}
+
+	return out, OK(ctx)
 }

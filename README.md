@@ -27,6 +27,7 @@ http://0.0.0.0:11000/metric/
 - [x] Confirmation of email-password identity
 - [x] Repeat email confirmation of email-password identity
 - [x] User's profile
+- [x] Update user's profile
 - [x] Authentication by email-password identity
     - [x] Switch JWT token to PASETO token
 - [x] Identity reset password process

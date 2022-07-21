@@ -10,6 +10,7 @@ import (
 	"ms-users/app/usecase/reset_password_confirm"
 	"ms-users/app/usecase/reset_password_init"
 	"ms-users/app/usecase/retry_confirm"
+	"ms-users/app/usecase/update_profile"
 	"ms-users/app/usecase/whoami"
 )
 
@@ -27,6 +28,7 @@ type Commands struct {
 	RetryConfirm            retry_confirm.UseCase
 	ResetPasswordInit       reset_password_init.UseCase
 	ResetPasswordConfirm    reset_password_confirm.UseCase
+	UpdateProfile           update_profile.UseCase
 }
 
 // Server implements the protobuf interface

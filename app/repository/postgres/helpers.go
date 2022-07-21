@@ -77,3 +77,38 @@ func (d *DB) one(ctx context.Context, query string, args ...interface{}) (*sql.R
 
 	return r, E(r.Err())
 }
+
+// contains returns `true` when `list` includes `v`.
+func contains(list []string, v string) bool {
+	for _, s := range list {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
+type containsAlgo uint8
+
+const (
+	atLeastOne containsAlgo = iota
+	exactlyAll
+)
+
+// mcontains returns `true` when `list` includes all `values`.
+// `algo` means algorithm for matching.
+// `atLeastOne` - one value from values enough for positive;
+// `exactlyAll` - exectly all values should be in the list.
+func mcontains(list, values []string, algo containsAlgo) bool {
+	for _, v := range values {
+		present := contains(list, v)
+		if algo == exactlyAll && !present {
+			return false
+		}
+		if algo == atLeastOne && present {
+			return true
+		}
+	}
+
+	return algo == exactlyAll
+}

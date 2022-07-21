@@ -25,6 +25,7 @@ import (
 	"ms-users/app/usecase/reset_password_confirm"
 	"ms-users/app/usecase/reset_password_init"
 	"ms-users/app/usecase/retry_confirm"
+	"ms-users/app/usecase/update_profile"
 	"ms-users/app/usecase/whoami"
 
 	"google.golang.org/grpc"
@@ -122,6 +123,7 @@ func main() {
 				cfg.APP.ConfirmLife,
 			),
 			ResetPasswordConfirm: reset_password_confirm.New(d),
+			UpdateProfile:        update_profile.New(d, jsonSchema, createEmailPassIdentityUseCase),
 		},
 	)
 
