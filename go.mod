@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/caarlos0/env/v6 v6.9.1
+	github.com/dimiro1/health v0.0.0-00010101000000-000000000000
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
@@ -75,3 +76,5 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+replace github.com/dimiro1/health => github.com/timsolov/health v0.2.0

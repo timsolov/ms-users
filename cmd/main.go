@@ -28,6 +28,7 @@ import (
 	"ms-users/app/usecase/update_profile"
 	"ms-users/app/usecase/whoami"
 
+	"github.com/dimiro1/health"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 )
@@ -137,6 +138,10 @@ func main() {
 		},
 	)
 
+	// healthCheck
+	healthCheck := health.NewHandler()
+	healthCheck.AddChecker("postgres", d)
+
 	// run web -> gRPC gateway
 	grpcGwErr := grpc_gateway.Run(
 		ctx,
@@ -144,6 +149,7 @@ func main() {
 		cfg.HTTP.Addr(), // listen incoming host:port for rest api
 		cfg.GRPC.Addr(), // connect to gRPC server host:port
 		cfg.HTTP.Timeout,
+		healthCheck,
 		[]grpc_gateway.RegisterServiceHandlerFunc{
 			pb.RegisterUserServiceHandler,
 		},

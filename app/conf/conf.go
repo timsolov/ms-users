@@ -76,10 +76,10 @@ func (d *DB) DSN() string {
 }
 
 type HTTP struct {
-	Host    string   `env:"HTTP_HOST" envDefault:"0.0.0.0"`
-	Port    string   `env:"HTTP_PORT" envDefault:"11000"`
-	CORS    []string `env:"HTTP_CORS" envSeparator:";" envDefault:"*"`
-	Timeout string   `env:"HTTP_TIMEOUT" envDefault:"5S"`
+	Host    string        `env:"HTTP_HOST" envDefault:"0.0.0.0"`
+	Port    string        `env:"HTTP_PORT" envDefault:"11000"`
+	CORS    []string      `env:"HTTP_CORS" envSeparator:";" envDefault:"*"`
+	Timeout time.Duration `env:"HTTP_TIMEOUT" envDefault:"5s"`
 }
 
 func (http *HTTP) Addr() string {

@@ -7,6 +7,7 @@ import (
 
 	"ms-users/app/common/logger"
 
+	"github.com/dimiro1/health"
 	_ "github.com/jackc/pgx/v4/stdlib" // force include stdlib
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -180,4 +181,38 @@ func (d *DB) atomic(ctx context.Context, fn func(tx *DB) error) error {
 	}
 
 	return nil
+}
+
+func (d *DB) Check(ctx context.Context) health.Health {
+	var res health.Health
+
+	start := time.Now()
+	_, err := d.one(ctx, "SELECT 1")
+	since := time.Since(start)
+	res.AddInfo("duration", since.String())
+	if err != nil {
+		res.AddInfo("error", err.Error())
+		res.Down()
+		return res
+	}
+
+	dbStats := d.db.Stats()
+
+	stats := map[string]any{
+		"idle":                 dbStats.Idle,               // The number of idle connections.
+		"in_use":               dbStats.InUse,              // The number of connections currently in use.
+		"max_idle_closed":      dbStats.MaxIdleClosed,      // The total number of connections closed due to SetMaxIdleConns.
+		"max_idle_time_closed": dbStats.MaxIdleTimeClosed,  // The total number of connections closed due to SetConnMaxIdleTime.
+		"max_life_time_closed": dbStats.MaxLifetimeClosed,  // The total number of connections closed due to SetConnMaxLifetime.
+		"max_open_connections": dbStats.MaxOpenConnections, // Maximum number of open connections to the database.
+		"open_connections":     dbStats.OpenConnections,    // Pool Status
+		"wait_count":           dbStats.WaitCount,          // Counters
+		"wait_duration":        dbStats.WaitDuration,       // The total time blocked waiting for a new connection.
+	}
+
+	res.AddInfo("stats", stats)
+
+	res.Up()
+
+	return res
 }

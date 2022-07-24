@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"mime"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -26,11 +27,7 @@ import (
 const (
 	openApiPath    = "/swagger/"
 	prometheusPath = "/metric/"
-)
-
-// headers
-const (
-	grpcTimeout = "Grpc-Timeout"
+	healthPath     = "/health/"
 )
 
 // RegisterServiceHandlerFunc func to register gRPC service handler.
@@ -38,7 +35,7 @@ type RegisterServiceHandlerFunc func(ctx context.Context, mux *runtime.ServeMux,
 
 // Run runs the gRPC-Gateway on the gatewayAddr using gprcClient connection
 // as underlying gRPC client connection to gRPC server started before.
-func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr, httpTimeout string, services []RegisterServiceHandlerFunc) chan error {
+func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, httpTimeout time.Duration, healthCheck http.Handler, services []RegisterServiceHandlerFunc) chan error {
 	errCh := make(chan error, 1)
 
 	// establish connection to gRPC-server
@@ -85,15 +82,28 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr, httpTime
 
 	const readHeaderTimeout = 300 * time.Millisecond
 	gwServer := &http.Server{
+		BaseContext: func(_ net.Listener) context.Context {
+			return ctx
+		},
 		ReadHeaderTimeout: readHeaderTimeout,
 		Addr:              gatewayAddr,
 		Handler: loggerMw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r.Header.Set(grpcTimeout, httpTimeout)
+			// replace context by context with timeout
+			rctx, cancel := context.WithTimeout(r.Context(), httpTimeout)
+			defer cancel()
+			r = r.WithContext(rctx)
 
+			// GET /healthcheck/
+			if strings.HasPrefix(r.URL.Path, healthPath) {
+				http.StripPrefix(healthPath, healthCheck).ServeHTTP(w, r)
+				return
+			}
+			// GET /swagger/
 			if strings.HasPrefix(r.URL.Path, openApiPath) {
 				http.StripPrefix(openApiPath, oa).ServeHTTP(w, r)
 				return
 			}
+			// GET /metric/
 			if strings.HasPrefix(r.URL.Path, prometheusPath) {
 				http.StripPrefix(prometheusPath, promhttp.Handler()).ServeHTTP(w, r)
 				return
@@ -106,6 +116,7 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr, httpTime
 	log.Infof("Serving gRPC-Gateway http://%s", gatewayAddr)
 	log.Infof("Serving OpenAPI Documentation on http://%s%s", gatewayAddr, openApiPath)
 	log.Infof("Serving Prometheus Metrics on http://%s%s", gatewayAddr, prometheusPath)
+	log.Infof("Serving Healthcheck on http://%s%s", gatewayAddr, healthPath)
 	go func() {
 		errCh <- gwServer.ListenAndServe()
 		if err := gwServer.Shutdown(ctx); err != nil {
