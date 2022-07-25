@@ -34,6 +34,8 @@ import (
 )
 
 func main() {
+	grpc_gateway.Status = health.NotReady
+
 	cfg := conf.New()
 
 	log := logger.NewLogrusLogger(cfg.LOG.Level, cfg.LOG.Json, cfg.LOG.TimeFormat, false)
@@ -141,6 +143,10 @@ func main() {
 	// healthCheck
 	healthCheck := health.NewHandler()
 	healthCheck.AddChecker("postgres", d)
+	healthCheck.AddInfo("app", map[string]any{
+		"version":   conf.Version,
+		"buildtime": conf.Buildtime,
+	})
 
 	// run web -> gRPC gateway
 	grpcGwErr := grpc_gateway.Run(
@@ -158,6 +164,8 @@ func main() {
 	log.Infof("application started (version: %s buildtime: %s)", conf.Version, conf.Buildtime)
 	defer log.Infof("application finished")
 
+	grpc_gateway.Status = health.Up
+
 	select {
 	case <-ctx.Done():
 	case err := <-grpcErr:
@@ -165,6 +173,8 @@ func main() {
 	case err := <-grpcGwErr:
 		log.Errorf("gRPC gateway error: %s", err)
 	}
+
+	grpc_gateway.Status = health.Down
 
 	cancel()
 

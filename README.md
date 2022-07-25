@@ -24,6 +24,7 @@
 - [ ] Healthcheck for all dependencies
     - [x] PostgreSQL
     - [ ] ms-emails
+- [x] Status of service
 - [ ] Opentelemetry
 - [x] Prometheus
 - [ ] Authentication by Google OAuth 2.0
@@ -38,14 +39,26 @@
 ## Prometeus metrics
 
 Prometeus metrics available on:
-http://$HTTP_HOST:$HTTP_PORT/metric/
+http://\$HTTP_HOST:\$HTTP_PORT/metric/
 
 Default:
 http://0.0.0.0:11000/metric/
 
 ## Healthcheck
 
-http://$HTTP_HOST:$HTTP_PORT/health/
+http://\$HTTP_HOST:\$HTTP_PORT/health/
 
 Default:
 http://0.0.0.0:11000/health/
+
+## Status
+
+http://\$HTTP_HOST:\$HTTP_PORT/status/
+
+Default:
+http://0.0.0.0:11000/status/
+
+Response values:
+1. `NOT_READY` - the service not ready yet it's in preparing dependancies status;
+2. `UP` - the service in battle mode you can use it;
+3. `DOWN` - the service is shuting down.

@@ -77,4 +77,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace github.com/dimiro1/health => github.com/timsolov/health v0.2.0
+replace github.com/dimiro1/health => github.com/timsolov/health v0.2.1

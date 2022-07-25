@@ -15,6 +15,7 @@ import (
 	"ms-users/app/common/logger"
 	"ms-users/third_party"
 
+	"github.com/dimiro1/health"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
@@ -23,11 +24,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Status global variable for status
+var Status health.Status = health.Unknown
+
 // routes
 const (
 	openApiPath    = "/swagger/"
 	prometheusPath = "/metric/"
 	healthPath     = "/health/"
+	statusPath     = "/status/"
 )
 
 // RegisterServiceHandlerFunc func to register gRPC service handler.
@@ -95,7 +100,14 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, h
 
 			// GET /healthcheck/
 			if strings.HasPrefix(r.URL.Path, healthPath) {
+				w.WriteHeader(http.StatusOK)
 				http.StripPrefix(healthPath, healthCheck).ServeHTTP(w, r)
+				return
+			}
+			// GET /status/
+			if strings.HasPrefix(r.URL.Path, statusPath) {
+				w.WriteHeader(http.StatusOK)
+				http.StripPrefix(statusPath, statusHandler()).ServeHTTP(w, r)
 				return
 			}
 			// GET /swagger/
@@ -113,10 +125,11 @@ func Run(ctx context.Context, log logger.Logger, gatewayAddr, dialAddr string, h
 		})),
 	}
 
-	log.Infof("Serving gRPC-Gateway http://%s", gatewayAddr)
+	log.Infof("Serving gRPC-Gateway on http://%s", gatewayAddr)
 	log.Infof("Serving OpenAPI Documentation on http://%s%s", gatewayAddr, openApiPath)
 	log.Infof("Serving Prometheus Metrics on http://%s%s", gatewayAddr, prometheusPath)
 	log.Infof("Serving Healthcheck on http://%s%s", gatewayAddr, healthPath)
+	log.Infof("Serving Status on http://%s%s", gatewayAddr, statusPath)
 	go func() {
 		errCh <- gwServer.ListenAndServe()
 		if err := gwServer.Shutdown(ctx); err != nil {
@@ -140,6 +153,12 @@ func getOpenAPIHandler(log logger.Logger) http.Handler {
 		os.Exit(-1)
 	}
 	return http.FileServer(http.FS(subFS))
+}
+
+func statusHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(Status))
+	})
 }
 
 func httpResponseModifier(ctx context.Context, w http.ResponseWriter, p proto.Message) error {
