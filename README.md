@@ -23,6 +23,7 @@
 - [x] JSONSchema configurable profile info
 - [ ] Healthcheck for all dependencies
     - [x] PostgreSQL
+    - [x] gRPC Server
     - [ ] ms-emails
 - [x] Status of service
 - [ ] Opentelemetry
@@ -50,6 +51,36 @@ http://\$HTTP_HOST:\$HTTP_PORT/health/
 
 Default:
 http://0.0.0.0:11000/health/
+
+After making the request you will receive a response:
+```jsonc
+{
+  "app": {
+    "buildtime": "2022-07-26T19:19:51Z",
+    "version": "108f44c"
+  },
+  "grpc_server": {
+    "duration": "649.655µs",
+    "status": "UP"
+  },
+  "postgres": {
+    "duration": "1.039368ms",
+    "stats": {
+      "idle": 0,
+      "in_use": 1,
+      "max_idle_closed": 0,
+      "max_idle_time_closed": 0,
+      "max_life_time_closed": 0,
+      "max_open_connections": 5,
+      "open_connections": 1,
+      "wait_count": 0,
+      "wait_duration": 0
+    },
+    "status": "UP"
+  },
+  "status": "UP"
+}
+```
 
 ## Status
 

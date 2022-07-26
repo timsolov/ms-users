@@ -17,6 +17,7 @@ import (
 	"ms-users/app/delivery/grpc_listener"
 	"ms-users/app/delivery/grpc_server"
 	"ms-users/app/delivery/grpc_server/pb"
+	"ms-users/app/repository/grpc_local"
 	"ms-users/app/repository/postgres"
 	"ms-users/app/usecase/auth_emailpass"
 	"ms-users/app/usecase/confirm"
@@ -31,6 +32,7 @@ import (
 	"github.com/dimiro1/health"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func main() {
@@ -137,12 +139,21 @@ func main() {
 		cfg.GRPC.Addr(), // listen incoming host:port for gRPC server
 		func(s grpc.ServiceRegistrar) {
 			pb.RegisterUserServiceServer(s, grpcServer)
+			grpc_health_v1.RegisterHealthServer(s, grpcServer)
 		},
 	)
+
+	// gRPC health client
+	grpcHealthClient, err := grpc_local.NewHealthClient(ctx, cfg.GRPC.Addr())
+	if err != nil {
+		log.Errorf("health client: %v", err)
+		return
+	}
 
 	// healthCheck
 	healthCheck := health.NewHandler()
 	healthCheck.AddChecker("postgres", d)
+	healthCheck.AddChecker("grpc_server", grpc_local.HealthChecker(grpcHealthClient))
 	healthCheck.AddInfo("app", map[string]any{
 		"version":   conf.Version,
 		"buildtime": conf.Buildtime,
