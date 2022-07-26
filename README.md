@@ -8,6 +8,27 @@
 - CQRS pattern for usecases;
 - PASETO token;
 
+## Directories structure
+
+```
+├── api
+│   └── proto                     - proto files for describing API (gRPC/REST)
+├── app                           - main folder of application
+│   ├── common                    - commonly used packages, abstract implementations, helpers
+│   ├── conf                      - conf package: here we should define ENV variables which configures this service
+│   ├── delivery                  - delivery layer in Clean Arch: all interfaces for interacting with API of service (cli, grpc handlers, http handlers)
+│   ├── domain                    - entities layer in Clean Arch: domain entities, domain logic, all significant variables (e.g. common errors)
+│   ├── repository                - repository layer in Clean Arch: logic for working with database, cache, external services (e.g. abstraction for working with external emails service should be placed here)
+│   └── usecase                   - usecases layer in Clean Arch: whole business logic should placed here and separated by folders
+├── build                         - ci/cd scripts
+├── cmd                           - main packages
+├── docs                          - documentation
+├── integration_test              - integration tests should be placed here
+├── settings                      - folder additional settings files
+└── third_party
+    └── OpenAPI                   - OpenAPI 2.0 will stored here
+```
+
 ## Service specific features
 - [x] Create profile with email-password identity
 - [x] Confirmation of email-password identity
