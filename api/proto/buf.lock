@@ -4,12 +4,12 @@ deps:
   - remote: buf.build
     owner: googleapis
     repository: googleapis
-    commit: 2ecc14c6771e48bd86ced753e97424ff
+    commit: faacf837d7304c58b7c9020c7807fa6e
   - remote: buf.build
     owner: grpc-ecosystem
     repository: grpc-gateway
-    commit: febd9e8be39b4f4b878b9c64bcc203fd
+    commit: a1ecdc58eccd49aa8bea2a7a9022dc27
   - remote: buf.build
     owner: srikrsna
     repository: protoc-gen-gotag
-    commit: 04b38c6f540d4d2fa9cfd49ae01ae73b
+    commit: 7a85d3ad2e7642c198480e92bf730c14
