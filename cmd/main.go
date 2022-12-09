@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"ms-users/app/common/event"
 	"ms-users/app/common/jsonschema"
 	"ms-users/app/common/logger"
 	"ms-users/app/conf"
@@ -152,6 +153,7 @@ func main() {
 
 	// healthCheck
 	healthCheck := health.NewHandler()
+	healthCheck.AddChecker("ms-email", event.HealthChecker(cfg.EMAIL.Addr()))
 	healthCheck.AddChecker("postgres", d)
 	healthCheck.AddChecker("grpc_server", grpc_local.HealthChecker(grpcHealthClient))
 	healthCheck.AddInfo("app", map[string]any{

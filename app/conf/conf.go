@@ -19,6 +19,7 @@ type Config struct {
 	APP   APP
 	TOKEN TOKEN
 	DB    DB
+	EMAIL EMAIL
 	GRPC  GRPC
 	HTTP  HTTP
 	LOG   LOG
@@ -83,6 +84,15 @@ type HTTP struct {
 }
 
 func (http *HTTP) Addr() string {
+	return http.Host + ":" + http.Port
+}
+
+type EMAIL struct {
+	Host string `env:"EMAIL_HTTP_HOST" envDefault:"0.0.0.0"`
+	Port string `env:"EMAIL_HTTP_PORT" envDefault:"12000"`
+}
+
+func (http *EMAIL) Addr() string {
 	return http.Host + ":" + http.Port
 }
 
