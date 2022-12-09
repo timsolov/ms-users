@@ -7,28 +7,28 @@ endif
 BUILDTIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 GOLDFLAGS += -X ms-users/app/conf.Version=$(VERSION)
 GOLDFLAGS += -X ms-users/app/conf.Buildtime=$(BUILDTIME)
-GOFLAGS = -ldflags "$(GOLDFLAGS)"
+GOALFLAGS = -ldflags "$(GOLDFLAGS)"
 
 .DEFAULT_GOAL := default
 
 .PHONY: default
-default: gen build
+default: gen lint build
 
 .PHONY: build
 build:
-	go build -o service $(GOFLAGS) ./cmd/
+	go build -o service $(GOALFLAGS) ./cmd/
 
 .PHONY: gen
 gen:
+	clang-format -i api/proto/users/v1/users.proto
 	buf generate --template api/proto/buf.gen.yaml api/proto
 	buf generate --template api/proto/buf.gen.tagger.yaml api/proto
 	go generate ./...
-	clang-format -i api/proto/users/v1/users.proto
 
 .PHONY: lint
 lint:
 	buf lint api/proto
-	golangci-lint run --go=1.17 ./...
+	golangci-lint -c .golangci.yml run ./...
 
 .PHONY: sql
 sql: # make sql q="select * from table"
@@ -37,7 +37,7 @@ sql: # make sql q="select * from table"
 .PHONY: tools
 tools:
 	go install github.com/golang/mock/mockgen@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
 	go install github.com/bufbuild/buf/cmd/buf@latest
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
