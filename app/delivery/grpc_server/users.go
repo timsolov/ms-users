@@ -34,7 +34,6 @@ import (
 // - password (required);
 // - first_name (optional);
 // - last_name (optional);
-//
 func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmailPassIdentityRequest) (*pb.CreateEmailPassIdentityResponse, error) {
 	out := &pb.CreateEmailPassIdentityResponse{}
 
@@ -80,7 +79,6 @@ func (s *Server) CreateEmailPassIdentity(ctx context.Context, in *pb.CreateEmail
 // Access: X-User-Id
 //
 // Profile returns profile and identities of user by user_id.
-//
 func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.ProfileResponse, error) {
 	out := &pb.ProfileResponse{}
 
@@ -128,7 +126,6 @@ func (s *Server) Profile(ctx context.Context, _ *pb.ProfileRequest) (*pb.Profile
 // Access: Public
 //
 // It's possible to confirm different type of operations.
-//
 func (s *Server) Confirm(ctx context.Context, in *pb.ConfirmRequest) (out *pb.ConfirmResponse, err error) {
 	out = &pb.ConfirmResponse{}
 
@@ -156,7 +153,6 @@ func (s *Server) Confirm(ctx context.Context, in *pb.ConfirmRequest) (out *pb.Co
 //
 // For email-pass identity should be provided email and if identity with related
 // email exists confirmation will be sent to that email.
-//
 func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (*pb.RetryConfirmResponse, error) {
 	out := &pb.RetryConfirmResponse{}
 
@@ -184,7 +180,6 @@ func (s *Server) RetryConfirm(ctx context.Context, in *pb.RetryConfirmRequest) (
 // Authenticate users by email-password.
 //
 // Access: Public
-//
 func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest) (*pb.AuthEmailPassResponse, error) {
 	out := &pb.AuthEmailPassResponse{}
 
@@ -213,7 +208,6 @@ func (s *Server) AuthEmailPass(ctx context.Context, in *pb.AuthEmailPassRequest)
 //
 // This end-point considers you have an access_token in Cookie or Authorization header.
 // It's possible to use it in authentication middleware for authenticate users.
-//
 func (s *Server) Whoami(ctx context.Context, _ *pb.WhoamiRequest) (*pb.WhoamiResponse, error) {
 	out := &pb.WhoamiResponse{}
 
@@ -263,7 +257,6 @@ usecase:
 //
 // This end-point will always return 200 OK for failed and success requests. This is
 // necessary to prevent database brute-forcing.
-//
 func (s *Server) ResetPasswordInit(ctx context.Context, in *pb.ResetPasswordInitRequest) (*pb.ResetPasswordInitResponse, error) {
 	out := &pb.ResetPasswordInitResponse{}
 
@@ -290,7 +283,6 @@ func (s *Server) ResetPasswordInit(ctx context.Context, in *pb.ResetPasswordInit
 //
 // It's necessary to identify does the user who started recovery process is owner of
 // the identity. So this end-point waits for verification id, code and new password.
-//
 func (s *Server) ResetPasswordConfirm(ctx context.Context, in *pb.ResetPasswordConfirmRequest) (*pb.ResetPasswordConfirmResponse, error) {
 	out := &pb.ResetPasswordConfirmResponse{}
 
@@ -319,7 +311,6 @@ func (s *Server) ResetPasswordConfirm(ctx context.Context, in *pb.ResetPasswordC
 // Access: X-User-Id
 //
 // Updates one or multiple profile traits in database.
-//
 func (s *Server) UpdateProfile(ctx context.Context, in *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
 	out := &pb.UpdateProfileResponse{}
 
